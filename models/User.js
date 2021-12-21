@@ -53,6 +53,7 @@ const userSchema = new mongoose.Schema(
       },
       // required: [true, 'Please confirm your password'],
     },
+
     //* User must check term and services
     agreed: {
       type: Boolean,
