@@ -1,5 +1,4 @@
 const User = require('../models/User');
-const Freelancer = require('../models/Freelancer');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 
@@ -9,6 +8,7 @@ exports.setMe = catchAsync(async (req, res, next) => {
   next();
 });
 
+// admin
 exports.getAllUsers = catchAsync(async (req, res, next) => {
   console.log('role :>> ', req.query.role);
 
@@ -26,11 +26,25 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
 exports.getMe = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user._id);
 
-  if (user.__type === 'Freelancer') {
+  if (user.__type === 'User') {
     await User.populate(user, {
       path: 'gigs',
     });
   }
+
+  res.status(200).json({
+    status: 'success',
+    user,
+  });
+});
+
+exports.getUser = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.params.id);
+
+  if (!user)
+    return next(
+      new AppError(`No User found against id ${req.params.id}`, 404)
+    );
 
   res.status(200).json({
     status: 'success',
@@ -43,9 +57,9 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   // console.log(`req.params.id`, req.params.id);
 
   let updatedUser;
-  if (req.user.__type === 'Freelancer') {
-    console.log('freelancer');
-    updatedUser = await Freelancer.findByIdAndUpdate(
+  if (req.user.__type === 'User') {
+    console.log('User');
+    updatedUser = await User.findByIdAndUpdate(
       req.user._id,
       req.body,
       {
@@ -76,19 +90,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getUser = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.params.id);
-
-  if (!user)
-    return next(
-      new AppError(`No User found against id ${req.params.id}`, 404)
-    );
-
-  res.status(200).json({
-    status: 'success',
-    user,
-  });
-});
+// admin
 
 exports.deleteUser = catchAsync(async (req, res, next) => {
   const deletedUser = await User.findByIdAndDelete(req.params.id);

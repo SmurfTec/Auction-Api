@@ -16,13 +16,18 @@ router
 router.patch('/updatePassword', authController.updatePassword);
 
 //* admin
-router.route('/').get(userController.getAllUsers);
+router
+  .route('/')
+  .get(restrictTo('admin'), userController.getAllUsers);
 
 router
   .route('/:id')
   .get(userController.getUser)
   .delete(restrictTo('admin'), userController.deleteUser);
 
-
+// router
+//   .route('/contact')
+//   .post(restrictTo('admin'), userController.getContact);
+//   .post(userController.createContact);
 
 module.exports = router;

@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      required: [true, 'Please tell us your fullname!'],
+      required: [true, 'Please tell us your firstname!'],
       unique: true,
       trim: true,
       maxlength: [20, 'firstname must be less than or equal to 20'],
@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
     },
     lastName: {
       type: String,
-      required: [true, 'Please tell us your fullname!'],
+      required: [true, 'Please tell us your lastname!'],
       unique: true,
       trim: true,
       maxlength: [20, 'lastname must be less than or equal to 20'],
@@ -29,7 +29,6 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       validate: [validator.isEmail, 'Please provide a valid email'],
     },
-    photo: String,
     role: {
       type: String,
       enum: ['admin', 'user'],

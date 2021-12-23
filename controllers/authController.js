@@ -45,12 +45,12 @@ exports.signup = catchAsync(async (req, res, next) => {
   //   admin,
   // });
 
-  if (req.body.role !== 'admin' || req.body.role !== 'user')
-    return next(new AppError(`Plz enter a valid role`));
+  console.log('req.body.role :>> ', req.body);
+  console.log('req.body.role :>> ', req.body.role);
 
   let user = await Client.create({
-    firstame: req.body.firstName,
-    lastame: req.body.lastName,
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
@@ -85,9 +85,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 });
 
 exports.login = catchAsync(async (req, res, next) => {
-  const { role } = req.params;
   const { email, password } = req.body;
-  console.log(email);
 
   if (!email || !password) {
     //  check email and password exist
