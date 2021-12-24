@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Client = require('../models/Client');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 
@@ -53,31 +54,16 @@ exports.getUser = catchAsync(async (req, res, next) => {
 });
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  // console.log(`req.user._id`, req.user._id);
-  // console.log(`req.params.id`, req.params.id);
+  console.log(req.body);
 
-  let updatedUser;
-  if (req.user.__type === 'User') {
-    console.log('User');
-    updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-  } else {
-    // console.log('user');
-    updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-  }
+  const updatedUser = await Client.findByIdAndUpdate(
+    req.user._id,
+    { ...req.body },
+    {
+      runValidators: true,
+      new: true,
+    }
+  );
 
   if (!updatedUser)
     return next(

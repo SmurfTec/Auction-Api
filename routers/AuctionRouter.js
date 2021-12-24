@@ -7,14 +7,31 @@ const router = express.Router();
 
 router
   .route('/')
-  .get(auctionController.getFaqs)
-  .post(protect, auctionController.createFaqs);
-
-//* only update and delete the auction if its not published yet!
+  .get(auctionController.getAllAuctions) //* only published/live One's or
+  .post(protect, auctionController.createAuction);
 
 router
+  .route('/publish')
+  .patch(protect, auctionController.publishAuction);
+
+//* claim Auction
+router.route('/claim').patch(protect, auctionController.claimAuction);
+
+router
+  .route('/watchlist')
+  .get(protect, auctionController.getmyWatchList);
+
+//* only update and delete the auction if its not published yet
+router
   .route('/:id')
-  .patch(protect, auctionController.updateFaqs)
-  .delete(protect, auctionController.deleteFaqs);
+  .patch(protect, auctionController.updateAuction)
+  .delete(protect, auctionController.deleteAuction);
+
+//* Auction will be autmatically remove when its archived or completed
+
+router
+  .route('/:id/watchlist')
+  .post(protect, auctionController.addtoWatchList)
+  .delete(protect, auctionController.removefromWatchList);
 
 module.exports = router;

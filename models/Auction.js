@@ -28,23 +28,15 @@ const auctionSchema = new mongoose.Schema(
       type: String,
     },
     images: [String],
-    categories: {
-      type: String,
-      enum: [
-        'item',
-        'experience',
-        'food',
-        'influencer focused',
-        'location based',
-        'brand',
-        'business',
-        'celebrity',
-        'random',
-        'risky',
-        'luxury',
-      ],
-      required: [true, 'Plz select categorie'],
-    },
+
+    //* max 3
+    categories: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+        required: [true, 'Please select atleast one category'],
+      },
+    ],
 
     timeLine: {
       type: Date,
@@ -62,6 +54,7 @@ const auctionSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
     expireyClaim: {
       type: Date,
     },
@@ -69,7 +62,7 @@ const auctionSchema = new mongoose.Schema(
     //~ Once the auction is published it cannot be updated and deleted by the creator
 
     //* inProgress => aucions are created by not yet published
-    //* live => created auctions are published/live
+    //* published => created auctions are published/live
     //* archived => auction is archived when its not claimed by anyone
     //* claimed => claimed autions by targeted object
 
@@ -91,5 +84,4 @@ auctionSchema.pre(/^find/, function (next) {
 const Auction = mongoose.model('Auction', auctionSchema);
 module.exports = Auction;
 
-//* auction will be there for about 30-days for claim
 //* watchlist

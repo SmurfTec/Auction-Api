@@ -10,6 +10,8 @@ const path = require('path');
 
 const userRouter = require('./routers/userRouter');
 const authRoutes = require('./routers/authRoutes');
+const auctionRouter = require('./routers/AuctionRouter');
+const categoryRouter = require('./routers/categoryRouter');
 
 const globalErrorHandler = require('./middlewares/globalErrorHandler');
 
@@ -74,7 +76,8 @@ app.use((req, res, next) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRouter);
-// app.use('/api/auctions', auctionRouter);
+app.use('/api/auctions', auctionRouter);
+app.use('/api/categories', categoryRouter);
 
 // handling all (get,post,update,delete.....) unhandled routes
 app.all('*', (req, res, next) => {

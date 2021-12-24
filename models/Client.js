@@ -30,6 +30,7 @@ const clientSchema = new mongoose.Schema({
     type: Boolean,
     default: true, //^ it needs to be false default bec users social-accounts needs to be properly-verified
   },
+
   activationLink: String,
   passwordResetToken: String,
   passwordResetExpires: Date,

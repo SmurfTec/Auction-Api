@@ -1,111 +1,191 @@
-// const User = require('../models/User');
-// const Freelancer = require('../models/Freelancer');
-// const catchAsync = require('./../utils/catchAsync');
-// const AppError = require('./../utils/appError');
+const User = require('../models/User');
+const Auction = require('../models/Auction');
+const WatchList = require('../models/WatchList');
+const catchAsync = require('./../utils/catchAsync');
+const AppError = require('./../utils/appError');
 
-// exports.setMe = catchAsync(async (req, res, next) => {
-//   // console.log(`req.headers.origin`, req.headers.origin);
-//   req.params.id = req.user._id;
-//   next();
-// });
+exports.createAuction = catchAsync(async (req, res, next) => {
+  const { timeLine } = req.body;
 
-// exports.getAllUsers = catchAsync(async (req, res, next) => {
-//   console.log('role :>> ', req.query.role);
+  //* create a expirey clime date exactly 30-days after the timeLine
 
-//   let query = User.find();
-//   if (req.query.role) query.find({ role: req.query.role });
-//   const users = await query;
+  const auction = await Auction.create({
+    user: req.user._id,
+    ...req.body,
+  });
 
-//   res.status(200).json({
-//     status: 'success',
-//     results: users.length,
-//     users,
-//   });
-// });
+  res.status(200).json({
+    status: 'success',
+    auction,
+  });
+});
 
-// exports.getMe = catchAsync(async (req, res, next) => {
-//   const user = await User.findById(req.user._id);
+exports.getAllAuctions = catchAsync(async (req, res, next) => {
+  //* globally only get the published-auctions
+  const auctions = await Auction.find({ status: 'published' });
 
-//   if (user.__type === 'Freelancer') {
-//     await User.populate(user, {
-//       path: 'gigs',
-//     });
-//   }
+  res.status(200).json({
+    status: 'success',
+    results: auctions.length,
+    auctions,
+  });
+});
 
-//   res.status(200).json({
-//     status: 'success',
-//     user,
-//   });
-// });
+exports.getAuction = catchAsync(async (req, res, next) => {
+  const auction = await Auction.findById(req.params.id);
 
-// exports.updateMe = catchAsync(async (req, res, next) => {
-//   // console.log(`req.user._id`, req.user._id);
-//   // console.log(`req.params.id`, req.params.id);
+  if (!auction)
+    return next(
+      new AppError(
+        `No Auction found against id ${req.params.id}`,
+        404
+      )
+    );
+  res.status(200).json({
+    status: 'success',
+    auction,
+  });
+});
 
-//   let updatedUser;
-//   if (req.user.__type === 'Freelancer') {
-//     console.log('freelancer');
-//     updatedUser = await Freelancer.findByIdAndUpdate(
-//       req.user._id,
-//       req.body,
-//       {
-//         new: true,
-//         runValidators: true,
-//       }
-//     );
-//   } else {
-//     // console.log('user');
-//     updatedUser = await User.findByIdAndUpdate(
-//       req.user._id,
-//       req.body,
-//       {
-//         new: true,
-//         runValidators: true,
-//       }
-//     );
-//   }
+//* publish-Auction
+exports.publishAuction = catchAsync(async (req, res, next) => {
+  const auction = await Auction.findById(req.params.id);
 
-//   if (!updatedUser)
-//     return next(
-//       new AppError(`Can't find any user with id ${req.user._id}`, 404)
-//     );
+  if (!auction)
+    return next(
+      new AppError(
+        `No Auction found against id ${req.params.id}`,
+        404
+      )
+    );
 
-//   res.status(200).json({
-//     status: 'success',
-//     user: updatedUser,
-//   });
-// });
+  auction.status = 'published';
+  await auction.save();
 
-// exports.getUser = catchAsync(async (req, res, next) => {
-//   const user = await User.findById(req.params.id);
+  res.status(200).json({
+    status: 'success',
+    auction,
+  });
+});
 
-//   if (!user)
-//     return next(
-//       new AppError(`No User found against id ${req.params.id}`, 404)
-//     );
+//* ClaimAuction
+exports.claimAuction = catchAsync(async (req, res, next) => {
+  const auction = await Auction.findById(req.params.id);
 
-//   res.status(200).json({
-//     status: 'success',
-//     user,
-//   });
-// });
+  if (!auction)
+    return next(
+      new AppError(
+        `No Auction found against id ${req.params.id}`,
+        404
+      )
+    );
 
-// exports.deleteUser = catchAsync(async (req, res, next) => {
-//   const deletedUser = await User.findByIdAndDelete(req.params.id);
+  //* payment will be  their
 
-//   if (!deletedUser)
-//     return next(
-//       new AppError(`No User found against id ${req.params.id}`, 404)
-//     );
+  auction.status = 'claimed';
+  await auction.save();
 
-//   res.status(200).json({
-//     status: 'success',
-//     user: deletedUser,
-//   });
-// });
+  res.status(200).json({
+    status: 'success',
+    auction,
+  });
+});
 
+exports.updateAuction = catchAsync(async (req, res, next) => {
+  const updateAuction = await Auction.findByIdAndUpdate(
+    { user: req.user._id, status: 'inProgress' },
+    { ...req.body },
+    {
+      runValidators: true,
+      new: true,
+    }
+  );
 
+  if (!updateAuction)
+    return next(
+      new AppError(
+        `Can't find any auction with id ${req.user._id}`,
+        404
+      )
+    );
 
-//*----------------------------------------
-// Auction is live for either 1,2 or 3 weeks
-//
+  res.status(200).json({
+    status: 'success',
+    auction: updateAuction,
+  });
+});
+
+exports.deleteAuction = catchAsync(async (req, res, next) => {
+  const deletedUser = await Auction.findByIdAndDelete({
+    user: req.user._id,
+    status: 'inProgress',
+  });
+
+  if (!deletedUser)
+    return next(
+      new AppError(
+        `No Auction found against id ${req.params.id}`,
+        404
+      )
+    );
+
+  res.status(200).json({
+    status: 'success',
+    user: deletedUser,
+  });
+});
+
+//* WATCHLIST
+
+exports.getmyWatchList = catchAsync(async (req, res, next) => {
+  const watchlist = await WatchList.find({ user: req.user._id });
+
+  res.status(200).json({
+    status: 'success',
+    watchlist,
+  });
+});
+
+exports.addtoWatchList = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const auction = await Auction.findById(id);
+  if (!auction)
+    return next(
+      new AppError(
+        `No Auction found against id ${req.params.id}`,
+        404
+      )
+    );
+
+  const watchlist = await WatchList.create({
+    user: req.user._id,
+    auction: id,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    watchlist,
+  });
+});
+
+exports.removefromWatchList = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const auction = await Auction.findById(id);
+  if (!auction)
+    return next(
+      new AppError(
+        `No Auction found against id ${req.params.id}`,
+        404
+      )
+    );
+
+  const watchlist = await WatchList.findByIdAndDelete({
+    user: req.user._id,
+    status: 'inProgress',
+  });
+
+  res.status(200).json({
+    status: 'success',
+    watchlist,
+  });
+});
