@@ -11,6 +11,7 @@ const watchlistSchema = new mongoose.Schema(
       ref: 'Auction',
     },
   },
+
   {
     timestamps: true,
   }

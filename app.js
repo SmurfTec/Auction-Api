@@ -68,7 +68,7 @@ app.use(xss()); //    protect from molision code coming from html
 
 // testing middleware
 app.use((req, res, next) => {
-  console.log('this is a middleware');
+  console.log('running');
   next();
 });
 

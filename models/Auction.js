@@ -10,8 +10,15 @@ const auctionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Client',
     },
+    bids: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Bid',
+      },
+    ],
     title: {
       type: String,
+      unique: [true, 'title must be unique'],
       required: [true, 'Plz provide auction Title'],
     },
     description: {
@@ -23,6 +30,12 @@ const auctionSchema = new mongoose.Schema(
     },
     startingPrice: {
       type: Number,
+      validate: {
+        validator: function (el) {
+          return el > 0;
+        },
+        message: `startingPrice can't be nagative`,
+      },
     },
     video: {
       type: String,
@@ -55,7 +68,7 @@ const auctionSchema = new mongoose.Schema(
       default: false,
     },
 
-    expireyClaim: {
+    claimExpiry: {
       type: Date,
     },
 
@@ -69,6 +82,7 @@ const auctionSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ['inProgress', 'published', 'archived', 'claimed'],
+      default: 'inProgress',
     },
   },
   {
@@ -81,7 +95,12 @@ auctionSchema.pre(/^find/, function (next) {
   next();
 });
 
+auctionSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'categories',
+  });
+  next();
+});
+
 const Auction = mongoose.model('Auction', auctionSchema);
 module.exports = Auction;
-
-//* watchlist

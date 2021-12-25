@@ -6,13 +6,9 @@ const bidSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Client',
     },
-    auction: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Auction',
+    biddingPrice: {
+      type: Number,
     },
-    biddingPrice:{
-      type:Number,
-    }
   },
   {
     timestamps: true,
@@ -21,6 +17,13 @@ const bidSchema = new mongoose.Schema(
 
 bidSchema.pre(/^find/, function (next) {
   this.sort('-createdAt');
+  next();
+});
+
+bidSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'user',
+  });
   next();
 });
 

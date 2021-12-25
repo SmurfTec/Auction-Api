@@ -21,7 +21,8 @@ exports.getAllCategories = catchAsync(async (req, res, next) => {
 });
 
 exports.updateCategory = catchAsync(async (req, res, next) => {
-  const updatedCategory = await Client.findByIdAndUpdate(
+  const updatedCategory = await Category.findByIdAndUpdate(
+    req.params.id,
     { ...req.body },
     {
       runValidators: true,

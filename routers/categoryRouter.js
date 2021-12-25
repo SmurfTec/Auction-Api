@@ -16,7 +16,7 @@ router
 
 router
   .route('/:id')
-  .get(
+  .patch(
     protect,
     restrictTo('admin'),
     categoryController.updateCategory
