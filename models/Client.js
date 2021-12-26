@@ -40,5 +40,5 @@ const clientSchema = new mongoose.Schema({
   },
 });
 
-const clientModel = User.discriminator('client', clientSchema);
+const clientModel = User.discriminator('Client', clientSchema);
 module.exports = clientModel;

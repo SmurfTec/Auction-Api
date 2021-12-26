@@ -6,7 +6,7 @@ const watchlistSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Client',
     },
-    watchlist: {
+    auction: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Auction',
     },
@@ -19,6 +19,13 @@ const watchlistSchema = new mongoose.Schema(
 
 watchlistSchema.pre(/^find/, function (next) {
   this.sort('-createdAt');
+  next();
+});
+
+watchlistSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'auction',
+  });
   next();
 });
 

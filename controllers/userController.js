@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Client = require('../models/Client');
+const Contact = require('../models/Contact');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 
@@ -89,5 +90,29 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     user: deletedUser,
+  });
+});
+
+//* CONTACT
+exports.createContact = catchAsync(async (req, res, next) => {
+  const { email, message } = req.body;
+
+  const contact = await Contact.create({
+    email,
+    message,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    contact,
+  });
+});
+
+exports.getContacts = catchAsync(async (req, res, next) => {
+  const contact = await Contact.find();
+
+  res.status(200).json({
+    status: 'success',
+    contact,
   });
 });

@@ -6,28 +6,31 @@ const restrictTo = require('../middlewares/restrictTo');
 
 const router = express.Router();
 
-router.use(protect); //  protect all router which are comming after this middleware
-
 router
   .route('/me')
-  .get(userController.getMe)
-  .patch(userController.setMe, userController.updateMe);
+  .get(protect, userController.getMe)
+  .patch(protect, userController.setMe, userController.updateMe);
 
-router.patch('/updatePassword', authController.updatePassword);
+router.patch(
+  '/updatePassword',
+  protect,
+  authController.updatePassword
+);
 
 //* admin
+
 router
   .route('/')
-  .get(restrictTo('admin'), userController.getAllUsers);
+  .get(protect, restrictTo('admin'), userController.getAllUsers);
+
+router
+  .route('/contact')
+  .post(userController.createContact)
+  .get(protect, restrictTo('admin'), userController.getContacts);
 
 router
   .route('/:id')
-  .get(userController.getUser)
-  .delete(restrictTo('admin'), userController.deleteUser);
-
-// router
-//   .route('/contact')
-//   .post(restrictTo('admin'), userController.getContact);
-//   .post(userController.createContact);
+  .get(protect, userController.getUser)
+  .delete(protect, restrictTo('admin'), userController.deleteUser);
 
 module.exports = router;

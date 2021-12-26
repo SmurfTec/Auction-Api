@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Auction = require('../models/Auction');
+const Bid = require('../models/Bid');
 const WatchList = require('../models/WatchList');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
@@ -58,7 +59,9 @@ exports.myAuctions = catchAsync(async (req, res, next) => {
 });
 
 exports.getAuction = catchAsync(async (req, res, next) => {
-  const auction = await Auction.findById(req.params.id);
+  const auction = await Auction.findById(req.params.id).populate(
+    'bids'
+  );
 
   if (!auction)
     return next(
@@ -218,10 +221,25 @@ exports.createBid = catchAsync(async (req, res, next) => {
   const { biddingPrice } = req.body;
   const { id } = req.params;
 
-  const auction = await Auction.findById(id);
+  const auction = await Auction.findById(id).populate('bids');
   if (!auction) {
     return next(
       new AppError(`Can't find any auction with id ${id}`, 404)
+    );
+  }
+
+  if (biddingPrice <= auction.startingPrice) {
+    return next(
+      new AppError(`Bid must be greater than startingPrice`, 400)
+    );
+  }
+
+  const check = auction.bids.find(
+    (bid) => bid.biddingPrice >= biddingPrice
+  );
+  if (check) {
+    return next(
+      new AppError(`Bid must be greater than last bid`, 400)
     );
   }
 
@@ -235,14 +253,16 @@ exports.createBid = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
-    bid,
+    auction,
   });
 });
 
 //* WATCHLIST
 
 exports.getmyWatchList = catchAsync(async (req, res, next) => {
-  const watchlist = await WatchList.find({ user: req.user._id });
+  //* return only published ones
+
+  let watchlist = await WatchList.find({ user: req.user._id });
 
   res.status(200).json({
     status: 'success',
@@ -252,6 +272,7 @@ exports.getmyWatchList = catchAsync(async (req, res, next) => {
 
 exports.addtoWatchList = catchAsync(async (req, res, next) => {
   const { id } = req.params;
+
   const auction = await Auction.findById(id);
   if (!auction)
     return next(
@@ -285,7 +306,7 @@ exports.removefromWatchList = catchAsync(async (req, res, next) => {
 
   const watchlist = await WatchList.findByIdAndDelete({
     user: req.user._id,
-    status: 'inProgress',
+    auction: id,
   });
 
   res.status(200).json({
