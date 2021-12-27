@@ -68,6 +68,10 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+userSchema.virtual('name').get(function () {
+  return `${this.firstName} ${this.lastName}`;
+});
+
 // userSchema.pre(/^find/, function (next) {
 //   next();
 // });

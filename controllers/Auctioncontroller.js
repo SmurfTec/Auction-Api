@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Client = require('../models/Client');
 const Auction = require('../models/Auction');
 const Bid = require('../models/Bid');
 const WatchList = require('../models/WatchList');
@@ -32,6 +33,14 @@ exports.createAuction = catchAsync(async (req, res, next) => {
     timeLine: timeline,
   });
 
+  await Auction.populate(auction, { path : 'categories'})
+  await Auction.populate(auction,
+      {
+        path: 'user',
+        model: User,
+        select  :'firstName lastName name'
+      })
+
   res.status(200).json({
     status: 'success',
     auction,
@@ -39,7 +48,11 @@ exports.createAuction = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllAuctions = catchAsync(async (req, res, next) => {
-  let auctions = await Auction.find({ status: 'published' });
+  let auctions = await Auction.find({ status: 'published' }).populate({
+    path: 'user',
+    model: User,
+    select: 'firstName lastName name',
+  });
 
   res.status(200).json({
     status: 'success',
@@ -49,7 +62,11 @@ exports.getAllAuctions = catchAsync(async (req, res, next) => {
 });
 
 exports.myAuctions = catchAsync(async (req, res, next) => {
-  const auctions = await Auction.find({ user: req.user._id });
+  const auctions = await Auction.find({ user: req.user._id }).populate({
+    path: 'user',
+    model: User,
+    select  :'firstName lastName name'
+  });
 
   res.status(200).json({
     status: 'success',
@@ -59,9 +76,13 @@ exports.myAuctions = catchAsync(async (req, res, next) => {
 });
 
 exports.getAuction = catchAsync(async (req, res, next) => {
-  const auction = await Auction.findById(req.params.id).populate(
-    'bids'
-  );
+  const auction = await Auction.findById(req.params.id)
+    .populate('bids')
+    .populate({
+      path: 'user',
+      model: User,
+      select: 'firstName lastName name',
+    });
 
   if (!auction)
     return next(
@@ -95,7 +116,7 @@ exports.getAuction = catchAsync(async (req, res, next) => {
 
 //* publish-Auction
 exports.publishAuction = catchAsync(async (req, res, next) => {
-  const auction = await Auction.findById({
+  const auction = await Auction.findOne({
     user: req.user._id,
     _id: req.params.id,
   });
@@ -141,7 +162,7 @@ exports.claimAuction = catchAsync(async (req, res, next) => {
 });
 
 exports.updateAuction = catchAsync(async (req, res, next) => {
-  const auction = await Auction.findById(req.params.id);
+  const auction = await Auction.findOne({user: req.user._id , _id: req.params.id});
 
   if (!auction) {
     return next(
@@ -153,7 +174,7 @@ exports.updateAuction = catchAsync(async (req, res, next) => {
   }
   if (auction.status !== 'inProgress') {
     return next(
-      new AppError(`you can Only update the inProgress auctions`, 400)
+      new AppError(`you can Only update the UnPublished auctions`, 400)
     );
   }
 
@@ -174,6 +195,13 @@ exports.updateAuction = catchAsync(async (req, res, next) => {
       )
     );
 
+  await Auction.populate(auction, 'bids');
+  await Auction.populate(auction, {
+    path : 'user',
+    model: User,
+    select :'firstName lastName name'
+  });
+
   res.status(200).json({
     status: 'success',
     auction: updateAuction,
@@ -181,7 +209,13 @@ exports.updateAuction = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteAuction = catchAsync(async (req, res, next) => {
-  const auction = await Auction.findById(req.params.id);
+  let auction;
+
+  // * Admin Can Delete any Auction, normal user can Delete only his auction
+  if(req.user.role === 'admin')
+   auction = await Auction.findById(req.params.id);
+  else 
+   auction = await Auction.findOne({ user: req.user._id, _id: req.params.id });
 
   if (!auction) {
     return next(
@@ -193,7 +227,7 @@ exports.deleteAuction = catchAsync(async (req, res, next) => {
   }
   if (auction.status !== 'inProgress') {
     return next(
-      new AppError(`you can Only delete the inProgress auctions`, 400)
+      new AppError(`You Can Only delete UnPublished auctions`, 400)
     );
   }
 
@@ -250,6 +284,7 @@ exports.createBid = catchAsync(async (req, res, next) => {
 
   auction.bids.unshift(bid._id);
   await auction.save();
+  await Auction.populate(auction,'bids')
 
   res.status(200).json({
     status: 'success',
