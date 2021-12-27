@@ -262,7 +262,10 @@ exports.createBid = catchAsync(async (req, res, next) => {
 exports.getmyWatchList = catchAsync(async (req, res, next) => {
   //* return only published ones
 
-  let watchlist = await WatchList.find({ user: req.user._id });
+  let watchlist = await WatchList.find({
+    user: req.user._id,
+    // 'auction.status': 'published',
+  });
 
   res.status(200).json({
     status: 'success',

@@ -54,9 +54,10 @@ const userSchema = new mongoose.Schema(
     },
 
     //* User must check term and services
+
     agreed: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
 
