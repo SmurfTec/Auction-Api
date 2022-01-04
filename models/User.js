@@ -8,15 +8,15 @@ const userSchema = new mongoose.Schema(
     firstName: {
       type: String,
       required: [true, 'Please tell us your firstname!'],
-      unique: true,
+      // unique: true,
       trim: true,
       maxlength: [20, 'firstname must be less than or equal to 20'],
       minlength: [3, 'firstname must be greater than 3'],
     },
     lastName: {
       type: String,
-      required: [true, 'Please tell us your lastname!'],
-      unique: true,
+      // required: [true, 'Please tell us your lastname!'],
+      // unique: true,
       trim: true,
       maxlength: [20, 'lastname must be less than or equal to 20'],
       minlength: [3, 'lastname must be greater than 3'],

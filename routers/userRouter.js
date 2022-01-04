@@ -9,7 +9,9 @@ const router = express.Router();
 router
   .route('/me')
   .get(protect, userController.getMe)
-  .patch(protect, userController.setMe, userController.updateMe);
+  .patch(protect,  userController.updateMe);
+// * why setme is called when updateMe is getting called,
+// * setMe is there if we use updateUser instead of updateMe
 
 router.patch(
   '/updatePassword',

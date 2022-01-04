@@ -44,9 +44,7 @@ exports.getUser = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.params.id);
 
   if (!user)
-    return next(
-      new AppError(`No User found against id ${req.params.id}`, 404)
-    );
+    return next(new AppError(`No User found against id ${req.params.id}`, 404));
 
   res.status(200).json({
     status: 'success',
@@ -56,6 +54,9 @@ exports.getUser = catchAsync(async (req, res, next) => {
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   console.log(req.body);
+  console.log(`  req.user._id`, req.user._id);
+
+  // * Client.Find... returns null, find the reason
 
   const updatedUser = await Client.findByIdAndUpdate(
     req.user._id,
@@ -83,9 +84,7 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
   const deletedUser = await User.findByIdAndDelete(req.params.id);
 
   if (!deletedUser)
-    return next(
-      new AppError(`No User found against id ${req.params.id}`, 404)
-    );
+    return next(new AppError(`No User found against id ${req.params.id}`, 404));
 
   res.status(200).json({
     status: 'success',

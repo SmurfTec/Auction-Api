@@ -15,6 +15,12 @@ const clientSchema = new mongoose.Schema({
   },
   dateofBirth: {
     type: Date,
+    validate: {
+      validator: function (el) {
+        return new Date(el) < new Date();
+      },
+      message: `Date of birth must NOT be in past`,
+    },
   },
 
   //* in pearpop they are geting tiktok account name for verification and instagram oauth
@@ -29,6 +35,31 @@ const clientSchema = new mongoose.Schema({
   isVerified: {
     type: Boolean,
     default: true, //^ it needs to be false default bec users social-accounts needs to be properly-verified
+  },
+
+  paymentDetails: {
+    cardNumber: {
+      type: Number,
+
+      // TODO Add validations (only 16 digit number)
+      // validate: {
+      //   validator: function (el) {
+      //     return el;
+      //   },
+      //   message: ``,
+      // },
+    },
+    expiry: String, // TODO Check it'll be data or string
+    cvc: {
+      type: Number,
+      // TODO Add validations (only 3/4 digit number)
+      // validate: {
+      //   validator: function (el) {
+      //     return el;
+      //   },
+      //   message: ``,
+      // },
+    },
   },
 
   activationLink: String,
