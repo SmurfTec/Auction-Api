@@ -65,6 +65,8 @@ const userSchema = new mongoose.Schema(
     discriminatorKey: '__type',
     collection: 'User',
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
 

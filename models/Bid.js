@@ -23,6 +23,7 @@ bidSchema.pre(/^find/, function (next) {
 bidSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'user',
+    select: 'firstName lastName name',
   });
   next();
 });

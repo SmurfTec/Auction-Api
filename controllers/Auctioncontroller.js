@@ -285,6 +285,10 @@ exports.createBid = catchAsync(async (req, res, next) => {
   auction.bids.unshift(bid._id);
   await auction.save();
   await Auction.populate(auction,'bids')
+  await Auction.populate(auction, {
+    path: 'user',
+    select: 'firstName lastName name',
+  });
 
   res.status(200).json({
     status: 'success',
