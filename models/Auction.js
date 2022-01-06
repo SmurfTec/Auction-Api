@@ -6,9 +6,10 @@ const auctionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Client',
     },
-    winner: {
+    // * only for open auctions
+    winningBid: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Client',
+      ref: 'Bid',
     },
     bids: [
       {

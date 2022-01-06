@@ -33,13 +33,12 @@ exports.createAuction = catchAsync(async (req, res, next) => {
     timeLine: timeline,
   });
 
-  await Auction.populate(auction, { path : 'categories'})
-  await Auction.populate(auction,
-      {
-        path: 'user',
-        model: User,
-        select  :'firstName lastName name'
-      })
+  await Auction.populate(auction, { path: 'categories' });
+  await Auction.populate(auction, {
+    path: 'user',
+    model: User,
+    select: 'firstName lastName name',
+  });
 
   res.status(200).json({
     status: 'success',
@@ -65,7 +64,7 @@ exports.myAuctions = catchAsync(async (req, res, next) => {
   const auctions = await Auction.find({ user: req.user._id }).populate({
     path: 'user',
     model: User,
-    select  :'firstName lastName name'
+    select: 'firstName lastName name',
   });
 
   res.status(200).json({
@@ -86,10 +85,7 @@ exports.getAuction = catchAsync(async (req, res, next) => {
 
   if (!auction)
     return next(
-      new AppError(
-        `No Auction found against id ${req.params.id}`,
-        404
-      )
+      new AppError(`No Auction found against id ${req.params.id}`, 404)
     );
 
   // console.log('timeLine-Date:>> ', auction.timeLine.getDate());
@@ -123,10 +119,7 @@ exports.publishAuction = catchAsync(async (req, res, next) => {
 
   if (!auction)
     return next(
-      new AppError(
-        `No Auction found against id ${req.params.id}`,
-        404
-      )
+      new AppError(`No Auction found against id ${req.params.id}`, 404)
     );
 
   auction.status = 'published';
@@ -144,10 +137,7 @@ exports.claimAuction = catchAsync(async (req, res, next) => {
 
   if (!auction)
     return next(
-      new AppError(
-        `No Auction found against id ${req.params.id}`,
-        404
-      )
+      new AppError(`No Auction found against id ${req.params.id}`, 404)
     );
 
   //* payment will be  their
@@ -162,14 +152,14 @@ exports.claimAuction = catchAsync(async (req, res, next) => {
 });
 
 exports.updateAuction = catchAsync(async (req, res, next) => {
-  const auction = await Auction.findOne({user: req.user._id , _id: req.params.id});
+  const auction = await Auction.findOne({
+    user: req.user._id,
+    _id: req.params.id,
+  });
 
   if (!auction) {
     return next(
-      new AppError(
-        `Can't find any auction with id ${req.params.id}`,
-        404
-      )
+      new AppError(`Can't find any auction with id ${req.params.id}`, 404)
     );
   }
   if (auction.status !== 'inProgress') {
@@ -189,17 +179,14 @@ exports.updateAuction = catchAsync(async (req, res, next) => {
 
   if (!updateAuction)
     return next(
-      new AppError(
-        `Can't find any auction with id ${req.params.id}`,
-        404
-      )
+      new AppError(`Can't find any auction with id ${req.params.id}`, 404)
     );
 
   await Auction.populate(auction, 'bids');
   await Auction.populate(auction, {
-    path : 'user',
+    path: 'user',
     model: User,
-    select :'firstName lastName name'
+    select: 'firstName lastName name',
   });
 
   res.status(200).json({
@@ -212,23 +199,18 @@ exports.deleteAuction = catchAsync(async (req, res, next) => {
   let auction;
 
   // * Admin Can Delete any Auction, normal user can Delete only his auction
-  if(req.user.role === 'admin')
-   auction = await Auction.findById(req.params.id);
-  else 
-   auction = await Auction.findOne({ user: req.user._id, _id: req.params.id });
+  if (req.user.role === 'admin')
+    auction = await Auction.findById(req.params.id);
+  else
+    auction = await Auction.findOne({ user: req.user._id, _id: req.params.id });
 
   if (!auction) {
     return next(
-      new AppError(
-        `Can't find any auction with id ${req.params.id}`,
-        404
-      )
+      new AppError(`Can't find any auction with id ${req.params.id}`, 404)
     );
   }
   if (auction.status !== 'inProgress') {
-    return next(
-      new AppError(`You Can Only delete UnPublished auctions`, 400)
-    );
+    return next(new AppError(`You Can Only delete UnPublished auctions`, 400));
   }
 
   const deleteAuction = await Auction.findByIdAndDelete({
@@ -238,10 +220,7 @@ exports.deleteAuction = catchAsync(async (req, res, next) => {
 
   if (!deleteAuction)
     return next(
-      new AppError(
-        `No Auction found against id ${req.params.id}`,
-        404
-      )
+      new AppError(`No Auction found against id ${req.params.id}`, 404)
     );
 
   res.status(200).json({
@@ -257,24 +236,16 @@ exports.createBid = catchAsync(async (req, res, next) => {
 
   const auction = await Auction.findById(id).populate('bids');
   if (!auction) {
-    return next(
-      new AppError(`Can't find any auction with id ${id}`, 404)
-    );
+    return next(new AppError(`Can't find any auction with id ${id}`, 404));
   }
 
   if (biddingPrice <= auction.startingPrice) {
-    return next(
-      new AppError(`Bid must be greater than startingPrice`, 400)
-    );
+    return next(new AppError(`Bid must be greater than startingPrice`, 400));
   }
 
-  const check = auction.bids.find(
-    (bid) => bid.biddingPrice >= biddingPrice
-  );
+  const check = auction.bids.find((bid) => bid.biddingPrice >= biddingPrice);
   if (check) {
-    return next(
-      new AppError(`Bid must be greater than last bid`, 400)
-    );
+    return next(new AppError(`Bid must be greater than last bid`, 400));
   }
 
   const bid = await Bid.create({
@@ -284,7 +255,7 @@ exports.createBid = catchAsync(async (req, res, next) => {
 
   auction.bids.unshift(bid._id);
   await auction.save();
-  await Auction.populate(auction,'bids')
+  await Auction.populate(auction, 'bids');
   await Auction.populate(auction, {
     path: 'user',
     select: 'firstName lastName name',
@@ -304,6 +275,9 @@ exports.getmyWatchList = catchAsync(async (req, res, next) => {
   let watchlist = await WatchList.find({
     user: req.user._id,
     // 'auction.status': 'published',
+  }).populate({
+    path: 'user',
+    select: 'firstName lastName name',
   });
 
   res.status(200).json({
@@ -318,15 +292,31 @@ exports.addtoWatchList = catchAsync(async (req, res, next) => {
   const auction = await Auction.findById(id);
   if (!auction)
     return next(
-      new AppError(
-        `No Auction found against id ${req.params.id}`,
-        404
-      )
+      new AppError(`No Auction found against id ${req.params.id}`, 404)
     );
+
+  // * Check if Auction is already in watchlist
+  let alreadyDoc = await WatchList.findOne({
+    user: req.user._id,
+    auction: id,
+  });
+
+  if (alreadyDoc)
+    return next(new AppError('This auction is already in your watchlist', 400));
 
   const watchlist = await WatchList.create({
     user: req.user._id,
     auction: id,
+  });
+
+  await WatchList.populate(watchlist, {
+    path: 'user',
+    select: 'firstName lastName name',
+  });
+
+  await WatchList.populate(watchlist, {
+    path: 'auction',
+    populate: 'bids',
   });
 
   res.status(200).json({
@@ -340,10 +330,7 @@ exports.removefromWatchList = catchAsync(async (req, res, next) => {
   const auction = await Auction.findById(id);
   if (!auction)
     return next(
-      new AppError(
-        `No Auction found against id ${req.params.id}`,
-        404
-      )
+      new AppError(`No Auction found against id ${req.params.id}`, 404)
     );
 
   const watchlist = await WatchList.findByIdAndDelete({
