@@ -26,11 +26,15 @@ exports.createAuction = catchAsync(async (req, res, next) => {
   // console.log('claimExpiry-Month:>> ', claimExpiry.getMonth());
   // console.log('claimExpiry-Year:>> ', claimExpiry.getFullYear());
 
+  let publishDate;
+  if (req.body.status === 'published') publishDate = new Date();
+
   const auction = await Auction.create({
     ...req.body,
     user: req.user._id,
     claimExpiry: claimExpiry,
     timeLine: timeline,
+    publishDate: publishDate,
   });
 
   await Auction.populate(auction, { path: 'categories' });
@@ -63,7 +67,11 @@ exports.getAllAuctions = catchAsync(async (req, res, next) => {
 });
 
 exports.myAuctions = catchAsync(async (req, res, next) => {
-  const auctions = await Auction.find({ user: req.user._id }).populate({
+  // const auctions = await Auction.find({ user: req.user._id }).populate({
+  const auctions = await Auction.find({
+    user: req.user._id,
+    status: 'inProgress',
+  }).populate({
     path: 'user',
     model: User,
     select: 'firstName lastName name',
@@ -170,9 +178,15 @@ exports.updateAuction = catchAsync(async (req, res, next) => {
     );
   }
 
+  let publishDate;
+  if (req.body.status === 'published') publishDate = new Date();
+
   const updateAuction = await Auction.findByIdAndUpdate(
     { _id: req.params.id, status: 'inProgress' },
-    { ...req.body },
+    {
+      ...req.body,
+      publishDate: publishDate,
+    },
     {
       runValidators: true,
       new: true,

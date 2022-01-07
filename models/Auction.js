@@ -85,6 +85,9 @@ const auctionSchema = new mongoose.Schema(
       enum: ['inProgress', 'published', 'archived', 'claimed'],
       default: 'inProgress',
     },
+    publishDate: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

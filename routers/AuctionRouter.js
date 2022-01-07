@@ -1,5 +1,5 @@
 const express = require('express');
-const auctionController = require('../controllers/auctionController');
+const auctionController = require('../controllers/Auctioncontroller');
 const protect = require('../middlewares/protect');
 const restrictTo = require('../middlewares/restrictTo');
 
@@ -10,16 +10,12 @@ router
   .get(auctionController.getAllAuctions) //* only published/live One's or
   .post(protect, auctionController.createAuction);
 
-router
-  .route('/myauctions')
-  .get(protect, auctionController.myAuctions);
+router.route('/myauctions').get(protect, auctionController.myAuctions);
 
 //* claim Auction
 router.route('/claim').patch(protect, auctionController.claimAuction);
 
-router
-  .route('/watchlist')
-  .get(protect, auctionController.getmyWatchList);
+router.route('/watchlist').get(protect, auctionController.getmyWatchList);
 
 //* only update and delete the auction if its not published yet
 router
@@ -29,9 +25,7 @@ router
   .delete(protect, auctionController.deleteAuction);
 
 //* published the auction
-router
-  .route('/:id/publish')
-  .patch(protect, auctionController.publishAuction);
+router.route('/:id/publish').patch(protect, auctionController.publishAuction);
 
 //*  create Bid
 router.route('/:id/bid').patch(protect, auctionController.createBid);
