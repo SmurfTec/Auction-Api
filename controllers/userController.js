@@ -94,9 +94,11 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
 
 //* CONTACT
 exports.createContact = catchAsync(async (req, res, next) => {
-  const { email, message } = req.body;
+  const { email, message, name } = req.body;
 
+  console.log(`req.body`, req.body);
   const contact = await Contact.create({
+    name,
     email,
     message,
   });

@@ -47,11 +47,13 @@ exports.createAuction = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllAuctions = catchAsync(async (req, res, next) => {
-  let auctions = await Auction.find({ status: 'published' }).populate({
-    path: 'user',
-    model: User,
-    select: 'firstName lastName name',
-  });
+  let auctions = await Auction.find({ status: { $ne: 'inProgress' } }).populate(
+    {
+      path: 'user',
+      model: User,
+      select: 'firstName lastName name',
+    }
+  );
 
   res.status(200).json({
     status: 'success',
