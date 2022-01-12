@@ -58,7 +58,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
   // * Client.Find... returns null, find the reason
 
-  const updatedUser = await Client.findByIdAndUpdate(
+  const updatedUser = await User.findByIdAndUpdate(
     req.user._id,
     { ...req.body },
     {
@@ -115,5 +115,26 @@ exports.getContacts = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     contact,
+  });
+});
+
+//* read notifications update user
+exports.readNotifications = catchAsync(async (req, res, next) => {
+  //* Visitors
+  let updateUser = await User.findById(req.user._id);
+
+  if (!updateUser)
+    return next(new AppError(`Logged User NOT Exists in DB`, 400));
+
+  console.log(`updatedUser`, updateUser);
+
+  // updateUser.notifications.forEach(async (notification) => {
+  //   await Notification.findByIdAndUpdate(notification._id, {
+  //     isRead: true,
+  //   });
+  // });
+
+  res.status(200).json({
+    status: 'success',
   });
 });

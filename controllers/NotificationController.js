@@ -1,40 +1,37 @@
-const mongoose = require('mongoose');
+const Notification = require('../models/Notification');
+const User = require('../models/User');
 
-const notificationSchema = new mongoose.Schema(
-  {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Freelancer',
-    },
-    title: {
-      type: String,
-      required: [true, 'Plz provide Notification Title'],
-    },
-    description: {
-      type: String,
-      required: [true, 'Plz provide Notification Description'],
-    },
-    type: {
-      type: String,
-      required: [true, 'Plz provide Notification Type'],
-      enum: ['account', 'offer', 'order'],
-    },
-    avatar: String,
-    isRead: {
-      type: Boolean,
-      default: false,
-    },
-    link: String,
-  },
-  {
-    timestamps: true,
+const sendNotificationEvent = async ({
+  title,
+  description,
+  type,
+  isVisitor,
+  link,
+  userId,
+}) => {
+  const { io } = require('../server');
+  //* send notification to user
+  const notification = await Notification.create({
+    title,
+    description,
+    type,
+    isVisitor,
+    link,
+  });
+
+  //* notification sent to admin side
+  io.sockets.emit('newNotification', {
+    newNotification: notification,
+    userId,
+  });
+
+  // * Push Notification to user (if userId)
+
+  if (userId) {
+    const updatedUser = await User.findById(userId);
+    updatedUser.notifications = [notification, ...updatedUser.notifications];
+    await updatedUser.save();
   }
-);
+};
 
-notificationSchema.pre(/^find/, function (next) {
-  this.sort('-createdAt');
-  next();
-});
-
-const Notification = mongoose.model('Notification', notificationSchema);
-module.exports = Notification;
+module.exports = sendNotificationEvent;

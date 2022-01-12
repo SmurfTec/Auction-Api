@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const Notification = require('./Notification');
 
 const userSchema = new mongoose.Schema(
   {
@@ -59,6 +60,12 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    notifications: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Notification',
+      },
+    ],
   },
 
   {
@@ -69,6 +76,11 @@ const userSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+userSchema.pre(/^find/, function (next) {
+  this.populate({ path: 'notifications', model: Notification });
+  next();
+});
 
 userSchema.virtual('name').get(function () {
   return `${this.firstName} ${this.lastName}`;

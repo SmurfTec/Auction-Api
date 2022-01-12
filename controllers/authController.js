@@ -89,17 +89,13 @@ exports.login = catchAsync(async (req, res, next) => {
 
   if (!email || !password) {
     //  check email and password exist
-    return next(
-      new AppError(' please proveide email and password ', 400)
-    );
+    return next(new AppError(' please proveide email and password ', 400));
   }
 
   const user = await User.findOne({ email }).select('+password'); // select expiclity password
 
   if (!user)
-    return next(
-      new AppError(`No User found against email ${email}`, 404)
-    );
+    return next(new AppError(`No User found against email ${email}`, 404));
 
   console.log(`user.role`, user.role);
 
@@ -140,8 +136,7 @@ exports.confirmMail = catchAsync(async (req, res) => {
     activationLink: hashedToken,
   });
 
-  if (!user)
-    return next(new AppError(`Activation Link Invalid or Expired !`));
+  if (!user) return next(new AppError(`Activation Link Invalid or Expired !`));
   // 3 Activate his Account
   user.activated = true;
   user.activationLink = undefined;
@@ -157,8 +152,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1 Check if Email Exists
   const { email } = req.body;
 
-  if (!email)
-    return next(new AppError(`Plz provide Email with request`, 400));
+  if (!email) return next(new AppError(`Plz provide Email with request`, 400));
 
   // 2 Check If User Exists with this email
   const user = await User.findOne({
@@ -216,9 +210,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   // 2 Check if user still exists and token is NOT Expired
   if (!user)
-    return next(
-      new AppError(`Reset Password Link Invalid or Expired !`)
-    );
+    return next(new AppError(`Reset Password Link Invalid or Expired !`));
 
   // 3 Change Password and Log the User in
   const { password, passwordConfirm } = req.body;
@@ -250,12 +242,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   console.log(user);
 
   // 2) check if posted current Password is Correct
-  if (
-    !(await user.correctPassword(
-      req.body.passwordCurrent,
-      user.password
-    ))
-  ) {
+  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
     // currentpass,db pass
     return next(new AppError(' Your current password is wrong', 401));
   }

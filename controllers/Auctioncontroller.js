@@ -5,6 +5,7 @@ const Bid = require('../models/Bid');
 const WatchList = require('../models/WatchList');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const sendNotification = require('./NotificationController');
 
 exports.createAuction = catchAsync(async (req, res, next) => {
   const { timeLine } = req.body;
@@ -70,7 +71,7 @@ exports.myAuctions = catchAsync(async (req, res, next) => {
   // const auctions = await Auction.find({ user: req.user._id }).populate({
   const auctions = await Auction.find({
     user: req.user._id,
-    status: 'inProgress',
+    // status: 'inProgress',
   }).populate({
     path: 'user',
     model: User,
@@ -280,6 +281,15 @@ exports.createBid = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     auction,
+  });
+
+  //* send notificaiton to staffers
+  sendNotification({
+    title: `New Bid made on your auction ${auction.title}`,
+    description: `at amount ${biddingPrice}`,
+    type: 'bid',
+    link: `/app/auctions/${auction._id}`,
+    userId: auction.user._id,
   });
 });
 

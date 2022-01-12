@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv').config({ path: './config.env' });
 const colors = require('colors');
+const socketIo = require('socket.io');
 const DBConnect = require('./utils/dbConnect');
 process.on('uncaughtException', (error) => {
   // using uncaughtException event
@@ -19,8 +20,13 @@ const port = process.env.PORT || 7000;
 const server = app.listen(port, () => {
   console.log(`App is running on port ${port}`.yellow.bold);
 });
+const io = socketIo(server);
 
+io.on('connection', (socket) => {
+  console.log(`Connection created with socket ${socket.id}`);
+});
 // handle Globaly  the unhandle Rejection Error which is  outside the express
+module.exports = { io };
 
 // e.g database connection
 process.on('unhandledRejection', (error) => {
