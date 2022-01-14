@@ -20,7 +20,7 @@ router.route('/watchlist').get(protect, auctionController.getmyWatchList);
 //* only update and delete the auction if its not published yet
 router
   .route('/:id')
-  .get(protect, auctionController.getAuction)
+  .get(auctionController.getAuction)
   .patch(protect, auctionController.updateAuction)
   .delete(protect, auctionController.deleteAuction);
 

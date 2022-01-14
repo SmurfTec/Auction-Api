@@ -288,7 +288,7 @@ exports.createBid = catchAsync(async (req, res, next) => {
     title: `New Bid made on your auction ${auction.title}`,
     description: `at amount ${biddingPrice}`,
     type: 'bid',
-    link: `/app/auctions/${auction._id}`,
+    link: `/auctionDetails/${auction._id}`,
     userId: auction.user._id,
   });
 });

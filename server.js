@@ -3,6 +3,8 @@ const dotenv = require('dotenv').config({ path: './config.env' });
 const colors = require('colors');
 const socketIo = require('socket.io');
 const DBConnect = require('./utils/dbConnect');
+const { handleNewMessage } = require('./controllers/socketController');
+
 process.on('uncaughtException', (error) => {
   // using uncaughtException event
   console.log(' uncaught Exception => shutting down..... ');
@@ -24,6 +26,10 @@ const io = socketIo(server);
 
 io.on('connection', (socket) => {
   console.log(`Connection created with socket ${socket.id}`);
+
+  socket.on('newMessage', (data) => {
+    handleNewMessage(io, data);
+  });
 });
 // handle Globaly  the unhandle Rejection Error which is  outside the express
 module.exports = { io };
