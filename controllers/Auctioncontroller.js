@@ -291,6 +291,8 @@ exports.createBid = catchAsync(async (req, res, next) => {
     link: `/auctionDetails/${auction._id}`,
     userId: auction.user._id,
   });
+  const { io } = require('../server');
+  io.sockets.emit('newBid', { updatedAuction: auction });
 });
 
 //* WATCHLIST

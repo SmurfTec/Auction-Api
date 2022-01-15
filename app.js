@@ -17,6 +17,10 @@ const chatRouter = require('./routers/chatRouter');
 const globalErrorHandler = require('./middlewares/globalErrorHandler');
 
 const AppError = require('./utils/appError');
+const protect = require('./middlewares/protect');
+const restrictTo = require('./middlewares/restrictTo');
+const catchAsync = require('./utils/catchAsync');
+const Contact = require('./models/Contact');
 
 // view engine setup
 app.set('view engine', 'ejs');
@@ -55,8 +59,6 @@ const limiter = rateLimit({
   message: ' Too many req from this IP , please Try  again in an Hour ! ',
 });
 
-app.use('/api', limiter);
-
 //  Body Parser  => reading data from body into req.body protect from scraping etc
 app.use(express.json({ limit: '10kb' }));
 
@@ -79,7 +81,19 @@ app.use('/api/users', userRouter);
 app.use('/api/auctions', auctionRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/chats', chatRouter);
+app.get(
+  '/api/contacts',
+  protect,
+  restrictTo('admin'),
+  catchAsync(async (req, res, next) => {
+    const contacts = await Contact.find();
 
+    res.json({
+      status: 'success',
+      contacts,
+    });
+  })
+);
 // handling all (get,post,update,delete.....) unhandled routes
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on the server`, 404));
