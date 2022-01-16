@@ -1,3 +1,4 @@
+require('./utils/passport');
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -13,6 +14,7 @@ const authRoutes = require('./routers/authRoutes');
 const auctionRouter = require('./routers/AuctionRouter');
 const categoryRouter = require('./routers/categoryRouter');
 const chatRouter = require('./routers/chatRouter');
+const socialRouter = require('./routers/socialAccount');
 
 const globalErrorHandler = require('./middlewares/globalErrorHandler');
 
@@ -81,6 +83,8 @@ app.use('/api/users', userRouter);
 app.use('/api/auctions', auctionRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/chats', chatRouter);
+app.use('/api/social', socialRouter);
+
 app.get(
   '/api/contacts',
   protect,
