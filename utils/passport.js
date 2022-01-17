@@ -19,6 +19,8 @@ passport.use(
       // includeEmail: true,
     },
     function (accessToken, refreshToken, profile, done) {
+      console.log(`accessToken`, accessToken);
+      console.log(`refreshToken`, refreshToken);
       console.log(`profile of twitter waalay bhai`, profile);
       done(null, profile);
     }
@@ -34,6 +36,8 @@ passport.use(
         'https://auction-api1.herokuapp.com/api/social/instagram/callback',
     },
     function (accessToken, refreshToken, profile, done) {
+      console.log(`accessToken`, accessToken);
+      console.log(`refreshToken`, refreshToken);
       console.log(`profile of instagram waalay bhai`, profile);
       // TODO Save the profile
       done(null, profile);
