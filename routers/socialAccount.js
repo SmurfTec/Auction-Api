@@ -12,6 +12,10 @@ router.get(
 
 router.get(
   '/twitter/callback',
+  (req, res, next) => {
+    console.log(`req.query.code`, req.query.code);
+    next();
+  },
   passport.authenticate('twitter', {
     successRedirect: CLIENT_URL,
     failureRedirect: CLIENT_URL,

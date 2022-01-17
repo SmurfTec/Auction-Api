@@ -32,7 +32,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.use(
   cookieSession({
-    name: 'auctionSession',
+    name: 'session',
     keys: ['lama'],
     maxAge: 24 * 60 * 60 * 100,
   }) // maxAge is 1day
