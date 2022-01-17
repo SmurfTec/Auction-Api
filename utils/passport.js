@@ -14,7 +14,8 @@ passport.use(
     {
       consumerKey: TWITTER_CONSUMER_KEY,
       consumerSecret: TWITTER_CONSUMER_SECRET,
-      callbackURL: 'https://auction-api1.herokuapp.com/auth/twitter/callback',
+      callbackURL:
+        'https://auction-api1.herokuapp.com/api/social/twitter/callback',
       // includeEmail: true,
     },
     function (accessToken, refreshToken, profile, done) {
@@ -29,7 +30,8 @@ passport.use(
     {
       clientID: INSTAGRAM_CONSUMER_KEY,
       clientSecret: INSTAGRAM_CONSUMER_SECRET,
-      callbackURL: 'https://auction-api1.herokuapp.com/auth/instagram/callback',
+      callbackURL:
+        'https://auction-api1.herokuapp.com/api/social/instagram/callback',
     },
     function (accessToken, refreshToken, profile, done) {
       console.log(`profile of instagram waalay bhai`, profile);
