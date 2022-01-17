@@ -14,7 +14,7 @@ router.get(
   '/twitter/callback',
   passport.authenticate('twitter', {
     successRedirect: CLIENT_URL,
-    failureRedirect: '/login/failed',
+    failureRedirect: CLIENT_URL,
   })
 );
 
@@ -27,7 +27,7 @@ router.get(
   '/instagram/callback',
   passport.authenticate('instagram', {
     successRedirect: CLIENT_URL,
-    failureRedirect: '/login/failed',
+    failureRedirect: CLIENT_URL,
   })
 );
 
