@@ -1,4 +1,5 @@
 require('./utils/passport');
+const passport = require('passport');
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -8,6 +9,7 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const path = require('path');
+const cookieSession = require('cookie-session');
 
 const userRouter = require('./routers/userRouter');
 const authRoutes = require('./routers/authRoutes');
@@ -27,6 +29,17 @@ const Contact = require('./models/Contact');
 // view engine setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+app.use(
+  cookieSession({
+    name: 'auctionSession',
+    keys: ['lama'],
+    maxAge: 24 * 60 * 60 * 100,
+  }) // maxAge is 1day
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // var whitelist = ['http://example1.com', 'http://example2.com']
 // var corsOptions = {

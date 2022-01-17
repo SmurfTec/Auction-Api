@@ -25,6 +25,10 @@ router.get(
 
 router.get(
   '/instagram/callback',
+  (req, res, next) => {
+    console.log(`req.query.code`, req.query.code);
+    next();
+  },
   passport.authenticate('instagram', {
     successRedirect: CLIENT_URL,
     failureRedirect: CLIENT_URL,
