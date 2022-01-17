@@ -3,7 +3,7 @@ const passport = require('passport');
 
 const router = express.Router();
 
-const CLIENT_URL = `https://auction-app-frontend.netlify.app/account`;
+const CLIENT_URL = `https://auction-frontend-brown.vercel.app`;
 
 router.get(
   '/twitter',
