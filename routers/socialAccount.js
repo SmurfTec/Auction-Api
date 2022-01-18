@@ -25,11 +25,11 @@ router.get(
 router.get(
   '/instagram',
   // passport.authenticate('instagram', { scope: ['profile'] })
-  passport.authenticate('instagram')
+  passport.authenticate('instagram', { failWithError: true })
 );
 
 router.get(
-  '/instagram/callback',
+  '/instagram/callback/',
   (req, res, next) => {
     console.log(`req.query.code`, req.query.code);
     next();
@@ -37,6 +37,7 @@ router.get(
   passport.authenticate('instagram', {
     successRedirect: CLIENT_URL,
     failureRedirect: CLIENT_URL,
+    failWithError: true,
   })
 );
 
