@@ -24,7 +24,8 @@ router.get(
 
 router.get(
   '/instagram',
-  passport.authenticate('instagram', { scope: ['profile'] })
+  // passport.authenticate('instagram', { scope: ['profile'] })
+  passport.authenticate('instagram')
 );
 
 router.get(
