@@ -15,8 +15,7 @@ passport.use(
       consumerKey: TWITTER_CONSUMER_KEY,
       consumerSecret: TWITTER_CONSUMER_SECRET,
       callbackURL:
-        // 'https://auction-api1.herokuapp.com/api/social/twitter/callback',
-        'http://localhost:5000/api/social/twitter/callback',
+        'https://auction-api1.herokuapp.com/api/social/twitter/callback',
       // includeEmail: true,
     },
     function (accessToken, refreshToken, profile, done) {
@@ -47,6 +46,7 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
+  console.log(`user`, user);
   done(null, user);
 });
 
