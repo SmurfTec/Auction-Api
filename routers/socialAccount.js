@@ -3,8 +3,7 @@ const passport = require('passport');
 
 const router = express.Router();
 
-// const CLIENT_URL = `https://auction-frontend-brown.vercel.app/`;
-const CLIENT_URL = `https://auction-api1.herokuapp.com/api/social/instagram/callback/`;
+const CLIENT_URL = `https://auction-frontend-brown.vercel.app/`;
 
 router.get(
   '/twitter',
