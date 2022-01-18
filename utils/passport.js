@@ -34,7 +34,7 @@ passport.use(
       clientID: INSTAGRAM_CONSUMER_KEY,
       clientSecret: INSTAGRAM_CONSUMER_SECRET,
       callbackURL:
-        'https://auction-api1.herokuapp.com/api/social/instagram/callback',
+        'https://auction-api1.herokuapp.com/api/social/instagram/callback/',
     },
     function (accessToken, refreshToken, profile, done) {
       console.log(`accessToken`, accessToken);
