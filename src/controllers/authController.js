@@ -5,10 +5,9 @@ const AppError = require('../utils/appError');
 const crypto = require('crypto');
 const sendMail = require('../utils/email');
 const Client = require('../models/Client');
+const { adminDomain } = require('../utils/constants');
 
 const signToken = (id) => {
-  console.log(`id`, id);
-
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     // payload + secret + expire time
     expiresIn: process.env.JWT_EXPIRES_IN,
@@ -17,9 +16,7 @@ const signToken = (id) => {
 
 const createsendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
-  console.log(`token`, token);
   // Remove the password from output
-  console.log(`user`, user);
   let resUser = user.toObject();
   resUser.password = undefined;
 
@@ -44,9 +41,6 @@ exports.signup = catchAsync(async (req, res, next) => {
   // return res.status(200).json({
   //   admin,
   // });
-
-  console.log('req.body.role :>> ', req.body);
-  console.log('req.body.role :>> ', req.body.role);
 
   let user = await Client.create({
     firstName: req.body.firstName,
@@ -116,6 +110,18 @@ exports.login = catchAsync(async (req, res, next) => {
         401
       )
     );
+
+  // * If request is coming from admin side, then only admins are allowed to login
+  console.log('req.headers.origin', req.headers.origin);
+  if (req.headers.origin === adminDomain) {
+    // * Only Admin Can login from this domain
+    if (user.role !== 'admin')
+      return next(new AppError('You are NOT authorized to login ', 403));
+  } else {
+    // * Only Users Can login from this domain
+    if (user.role !== 'user')
+      return next(new AppError('You are NOT authorized to login ', 403));
+  }
 
   // if eveything is ok
   createsendToken(user, 200, res);
@@ -215,8 +221,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // 3 Change Password and Log the User in
   const { password, passwordConfirm } = req.body;
 
-  // console.log('passwords are', password, passwordConfirm);
-
   user.password = password;
   user.passwordConfirm = passwordConfirm;
   user.passwordResetToken = undefined;
@@ -239,7 +243,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 exports.updatePassword = catchAsync(async (req, res, next) => {
   // 1) get user from collection
   const user = await User.findById(req.user.id).select('+password');
-  console.log(user);
 
   // 2) check if posted current Password is Correct
   if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {

@@ -1,5 +1,6 @@
 const express = require('express');
 const auctionController = require('../controllers/Auctioncontroller');
+const bidController = require('../controllers/bidController');
 const protect = require('../middlewares/protect');
 const restrictTo = require('../middlewares/restrictTo');
 
@@ -28,7 +29,7 @@ router
 router.route('/:id/publish').patch(protect, auctionController.publishAuction);
 
 //*  create Bid
-router.route('/:id/bid').patch(protect, auctionController.createBid);
+router.route('/:id/bid').patch(protect, bidController.createBid);
 
 //* Auction will be autmatically remove when its archived or completed
 router
