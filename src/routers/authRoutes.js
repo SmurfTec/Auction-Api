@@ -5,7 +5,7 @@ const protect = require('../middlewares/protect');
 const router = express.Router();
 
 router.post('/signUp', authController.signup);
-router.post('/login/:role', authController.login);
+router.post('/login', authController.login);
 
 router.route('/confirmMail/:activationLink').get(authController.confirmMail);
 router.route('/forgotPassword').post(authController.forgotPassword);

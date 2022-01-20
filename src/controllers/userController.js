@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Client = require('../models/Client');
+const Notification = require('../models/Notification');
 const Contact = require('../models/Contact');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
@@ -128,11 +129,11 @@ exports.readNotifications = catchAsync(async (req, res, next) => {
 
   console.log(`updatedUser`, updateUser);
 
-  // updateUser.notifications.forEach(async (notification) => {
-  //   await Notification.findByIdAndUpdate(notification._id, {
-  //     isRead: true,
-  //   });
-  // });
+  updateUser.notifications.forEach(async (notification) => {
+    await Notification.findByIdAndUpdate(notification._id, {
+      isRead: true,
+    });
+  });
 
   res.status(200).json({
     status: 'success',

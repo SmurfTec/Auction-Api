@@ -2,8 +2,10 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv').config({ path: './config.env' });
 const colors = require('colors');
 const socketIo = require('socket.io');
-const DBConnect = require('./utils/dbConnect');
-const { handleNewMessage } = require('./controllers/socketController');
+const DBConnect = require('./src/utils/dbConnect');
+const {
+  handleNewMessage,
+} = require('./src/controllers/socketController');
 
 process.on('uncaughtException', (error) => {
   // using uncaughtException event

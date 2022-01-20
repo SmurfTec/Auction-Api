@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const Client = require('../models/Client');
-const Auction = require('../models/Auction');
 const Bid = require('../models/Bid');
+const Auction = require('../models/Auction');
 const WatchList = require('../models/WatchList');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
@@ -226,9 +226,19 @@ exports.deleteAuction = catchAsync(async (req, res, next) => {
       new AppError(`Can't find any auction with id ${req.params.id}`, 404)
     );
   }
-  if (auction.status !== 'inProgress') {
+
+  if (req.user.role === 'user' && auction.status !== 'inProgress') {
     return next(new AppError(`You Can Only delete UnPublished auctions`, 400));
   }
+
+  // ! will consider that admin is deleting published auctions
+  // * Delete all bids of that auction before deleting that auctino
+  const bidPromises = auction.bids.map(async (el) => {
+    console.log('el', el);
+    return await Bid.findByIdAndDelete(el);
+  });
+
+  await Promise.all(bidPromises);
 
   const deleteAuction = await Auction.findByIdAndDelete({
     _id: req.params.id,
@@ -244,55 +254,6 @@ exports.deleteAuction = catchAsync(async (req, res, next) => {
     status: 'success',
     auction: deleteAuction,
   });
-});
-
-//* BID
-exports.createBid = catchAsync(async (req, res, next) => {
-  const { biddingPrice } = req.body;
-  const { id } = req.params;
-
-  const auction = await Auction.findById(id).populate('bids');
-  if (!auction) {
-    return next(new AppError(`Can't find any auction with id ${id}`, 404));
-  }
-
-  if (biddingPrice <= auction.startingPrice) {
-    return next(new AppError(`Bid must be greater than startingPrice`, 400));
-  }
-
-  const check = auction.bids.find((bid) => bid.biddingPrice >= biddingPrice);
-  if (check) {
-    return next(new AppError(`Bid must be greater than last bid`, 400));
-  }
-
-  const bid = await Bid.create({
-    user: req.user._id,
-    biddingPrice,
-  });
-
-  auction.bids.unshift(bid._id);
-  await auction.save();
-  await Auction.populate(auction, 'bids');
-  await Auction.populate(auction, {
-    path: 'user',
-    select: 'firstName lastName name',
-  });
-
-  res.status(200).json({
-    status: 'success',
-    auction,
-  });
-
-  //* send notificaiton to staffers
-  sendNotification({
-    title: `New Bid made on your auction ${auction.title}`,
-    description: `at amount ${biddingPrice}`,
-    type: 'bid',
-    link: `/auctionDetails/${auction._id}`,
-    userId: auction.user._id,
-  });
-  const { io } = require('../server');
-  io.sockets.emit('newBid', { updatedAuction: auction });
 });
 
 //* WATCHLIST

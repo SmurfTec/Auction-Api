@@ -1,3 +1,5 @@
+require('./src/utils/passport');
+const passport = require('passport');
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -7,24 +9,37 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const path = require('path');
+const cookieSession = require('cookie-session');
 
-const userRouter = require('./routers/userRouter');
-const authRoutes = require('./routers/authRoutes');
-const auctionRouter = require('./routers/AuctionRouter');
-const categoryRouter = require('./routers/categoryRouter');
-const chatRouter = require('./routers/chatRouter');
+const userRouter = require('./src/routers/userRouter');
+const authRoutes = require('./src/routers/authRoutes');
+const auctionRouter = require('./src/routers/AuctionRouter');
+const categoryRouter = require('./src/routers/categoryRouter');
+const chatRouter = require('./src/routers/chatRouter');
+const socialRouter = require('./src/routers/socialAccount');
 
-const globalErrorHandler = require('./middlewares/globalErrorHandler');
+const globalErrorHandler = require('./src/middlewares/globalErrorHandler');
 
-const AppError = require('./utils/appError');
-const protect = require('./middlewares/protect');
-const restrictTo = require('./middlewares/restrictTo');
-const catchAsync = require('./utils/catchAsync');
-const Contact = require('./models/Contact');
+const AppError = require('./src/utils/appError');
+const protect = require('./src/middlewares/protect');
+const restrictTo = require('./src/middlewares/restrictTo');
+const catchAsync = require('./src/utils/catchAsync');
+const Contact = require('./src/models/Contact');
 
 // view engine setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+app.use(
+  cookieSession({
+    name: 'session',
+    keys: ['lama'],
+    maxAge: 24 * 60 * 60 * 100,
+  }) // maxAge is 1day
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // var whitelist = ['http://example1.com', 'http://example2.com']
 // var corsOptions = {
@@ -56,7 +71,8 @@ app.use(cors());
 const limiter = rateLimit({
   max: 100, //   max number of limits
   windowMs: 60 * 60 * 1000, // hour
-  message: ' Too many req from this IP , please Try  again in an Hour ! ',
+  message:
+    ' Too many req from this IP , please Try  again in an Hour ! ',
 });
 
 //  Body Parser  => reading data from body into req.body protect from scraping etc
@@ -81,6 +97,8 @@ app.use('/api/users', userRouter);
 app.use('/api/auctions', auctionRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/chats', chatRouter);
+app.use('/api/social', socialRouter);
+
 app.get(
   '/api/contacts',
   protect,
@@ -96,7 +114,9 @@ app.get(
 );
 // handling all (get,post,update,delete.....) unhandled routes
 app.all('*', (req, res, next) => {
-  next(new AppError(`Can't find ${req.originalUrl} on the server`, 404));
+  next(
+    new AppError(`Can't find ${req.originalUrl} on the server`, 404)
+  );
 });
 
 // error handling middleware
