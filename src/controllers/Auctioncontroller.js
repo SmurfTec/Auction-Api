@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Client = require('../models/Client');
+const Bid = require('../models/Bid');
 const Auction = require('../models/Auction');
 const WatchList = require('../models/WatchList');
 const catchAsync = require('./../utils/catchAsync');
@@ -225,9 +226,19 @@ exports.deleteAuction = catchAsync(async (req, res, next) => {
       new AppError(`Can't find any auction with id ${req.params.id}`, 404)
     );
   }
-  if (auction.status !== 'inProgress') {
+
+  if (req.user.role === 'user' && auction.status !== 'inProgress') {
     return next(new AppError(`You Can Only delete UnPublished auctions`, 400));
   }
+
+  // ! will consider that admin is deleting published auctions
+  // * Delete all bids of that auction before deleting that auctino
+  const bidPromises = auction.bids.map(async (el) => {
+    console.log('el', el);
+    return await Bid.findByIdAndDelete(el);
+  });
+
+  await Promise.all(bidPromises);
 
   const deleteAuction = await Auction.findByIdAndDelete({
     _id: req.params.id,
