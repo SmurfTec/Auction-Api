@@ -2,6 +2,9 @@ const TwitterStrategy = require('passport-twitter').Strategy;
 const InstagramStrategy = require('passport-instagram').Strategy;
 
 const passport = require('passport');
+const Client = require('../models/Client');
+
+const CLIENT_URL = `https://auction-frontend-brown.vercel.app/`;
 
 TWITTER_CONSUMER_KEY = process.env.TWITTER_CONSUMER_KEY;
 TWITTER_CONSUMER_SECRET = process.env.TWITTER_CONSUMER_SECRET;
@@ -13,18 +16,30 @@ passport.use(
     {
       consumerKey: TWITTER_CONSUMER_KEY,
       consumerSecret: TWITTER_CONSUMER_SECRET,
-      callbackURL:
-        'https://auction-api1.herokuapp.com/api/social/twitter/callback',
-      // includeEmail: true,
+      passReqToCallback: true,
+      callbackURL: 'http://localhost:5000/api/social/twitter/callback',
+      // 'https://auction-api1.herokuapp.com/api/social/twitter/callback',
+      includeEmail: true,
     },
-    function (accessToken, refreshToken, profile, done) {
-      console.log(`accessToken`, accessToken);
-      console.log(`refreshToken`, refreshToken);
-      console.log(`profile of twitter waalay bhai`, profile);
+    async function (req, accessToken, refreshToken, profile, done) {
+      await Client.findByIdAndUpdate(
+        req.session.user,
+        {
+          twitterProfile: {
+            username: profile.username,
+            displayName: profile.displayName,
+            email: profile._json?.email,
+          },
+        },
+        { runValidators: true }
+      );
+
       done(null, profile);
     }
   )
 );
+
+// * https://github1s.com/leannezhang/twitter-authentication/blob/HEAD/client/src/components/Header.jsx
 
 passport.use(
   new InstagramStrategy(
@@ -35,9 +50,6 @@ passport.use(
         'https://auction-api1.herokuapp.com/api/social/instagram/callback/',
     },
     function (accessToken, refreshToken, profile, done) {
-      console.log(`accessToken`, accessToken);
-      console.log(`refreshToken`, refreshToken);
-      console.log(`profile of instagram waalay bhai`, profile);
       // TODO Save the profile
       done(null, profile);
     }
@@ -45,7 +57,6 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
-  console.log(`user`, user);
   done(null, user);
 });
 
