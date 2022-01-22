@@ -62,13 +62,8 @@ const auctionSchema = new mongoose.Schema(
       required: [true, 'Plz select an auction type'],
     },
 
-    twitterTarget: {
-      username: String,
-      displayName: String,
-      // location: String,
-      email: String,
-    },
-    instagramTarget: {},
+    twitterTarget: String,
+    instagramTarget: String,
 
     claim: {
       type: Boolean,

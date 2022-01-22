@@ -54,19 +54,24 @@ exports.createAuction = catchAsync(async (req, res, next) => {
     select: 'firstName lastName name',
   });
 
-  if (auction.type === 'specific') {
+  if (auction.type === 'specific' && auction.status === 'published') {
     //* tweet to specific purson
+
+    console.log(
+      `hello umad @${auction.twitterTarget} an auction has been created ${auction.title} in which you are tagged. Starting bid is ${auction.startingPrice}`
+    );
+
     client.post(
       'statuses/update',
       {
-        status: `hello umad @U_Ahmad_11 an auction has been created ${auction.title} starting bid is ${auction.startingPrice}`,
+        status: `hello @${auction.twitterTarget} ! an auction has been created ${auction.title} in which you are tagged. Starting bid is ${auction.startingPrice}`,
       },
       function (error, tweet, res) {
         if (error) {
           console.log('error', error);
         }
         console.log('tweet', tweet);
-        console.log('response', res);
+        // console.log('response', res);
       }
     );
     console.log(' tweet send....');
@@ -123,10 +128,7 @@ exports.getAuction = catchAsync(async (req, res, next) => {
 
   if (!auction)
     return next(
-      new AppError(
-        `No Auction found against id ${req.params.id}`,
-        404
-      )
+      new AppError(`No Auction found against id ${req.params.id}`, 404)
     );
 
   // console.log('timeLine-Date:>> ', auction.timeLine.getDate());
@@ -160,10 +162,7 @@ exports.publishAuction = catchAsync(async (req, res, next) => {
 
   if (!auction)
     return next(
-      new AppError(
-        `No Auction found against id ${req.params.id}`,
-        404
-      )
+      new AppError(`No Auction found against id ${req.params.id}`, 404)
     );
 
   auction.status = 'published';
@@ -181,10 +180,7 @@ exports.claimAuction = catchAsync(async (req, res, next) => {
 
   if (!auction)
     return next(
-      new AppError(
-        `No Auction found against id ${req.params.id}`,
-        404
-      )
+      new AppError(`No Auction found against id ${req.params.id}`, 404)
     );
 
   //* payment will be  their
@@ -206,18 +202,12 @@ exports.updateAuction = catchAsync(async (req, res, next) => {
 
   if (!auction) {
     return next(
-      new AppError(
-        `Can't find any auction with id ${req.params.id}`,
-        404
-      )
+      new AppError(`Can't find any auction with id ${req.params.id}`, 404)
     );
   }
   if (auction.status !== 'inProgress') {
     return next(
-      new AppError(
-        `you can Only update the UnPublished auctions`,
-        400
-      )
+      new AppError(`you can Only update the UnPublished auctions`, 400)
     );
   }
 
@@ -238,10 +228,7 @@ exports.updateAuction = catchAsync(async (req, res, next) => {
 
   if (!updateAuction)
     return next(
-      new AppError(
-        `Can't find any auction with id ${req.params.id}`,
-        404
-      )
+      new AppError(`Can't find any auction with id ${req.params.id}`, 404)
     );
 
   await Auction.populate(auction, 'bids');
@@ -288,17 +275,12 @@ exports.deleteAuction = catchAsync(async (req, res, next) => {
 
   if (!auction) {
     return next(
-      new AppError(
-        `Can't find any auction with id ${req.params.id}`,
-        404
-      )
+      new AppError(`Can't find any auction with id ${req.params.id}`, 404)
     );
   }
 
   if (req.user.role === 'user' && auction.status !== 'inProgress') {
-    return next(
-      new AppError(`You Can Only delete UnPublished auctions`, 400)
-    );
+    return next(new AppError(`You Can Only delete UnPublished auctions`, 400));
   }
 
   // ! will consider that admin is deleting published auctions
@@ -317,10 +299,7 @@ exports.deleteAuction = catchAsync(async (req, res, next) => {
 
   if (!deleteAuction)
     return next(
-      new AppError(
-        `No Auction found against id ${req.params.id}`,
-        404
-      )
+      new AppError(`No Auction found against id ${req.params.id}`, 404)
     );
 
   res.status(200).json({
@@ -354,10 +333,7 @@ exports.addtoWatchList = catchAsync(async (req, res, next) => {
   const auction = await Auction.findById(id);
   if (!auction)
     return next(
-      new AppError(
-        `No Auction found against id ${req.params.id}`,
-        404
-      )
+      new AppError(`No Auction found against id ${req.params.id}`, 404)
     );
 
   // * Check if Auction is already in watchlist
@@ -367,9 +343,7 @@ exports.addtoWatchList = catchAsync(async (req, res, next) => {
   });
 
   if (alreadyDoc)
-    return next(
-      new AppError('This auction is already in your watchlist', 400)
-    );
+    return next(new AppError('This auction is already in your watchlist', 400));
 
   const watchlist = await WatchList.create({
     user: req.user._id,
@@ -397,10 +371,7 @@ exports.removefromWatchList = catchAsync(async (req, res, next) => {
   const auction = await Auction.findById(id);
   if (!auction)
     return next(
-      new AppError(
-        `No Auction found against id ${req.params.id}`,
-        404
-      )
+      new AppError(`No Auction found against id ${req.params.id}`, 404)
     );
 
   const watchlist = await WatchList.findByIdAndDelete({
