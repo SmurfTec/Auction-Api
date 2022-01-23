@@ -10,6 +10,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const path = require('path');
 const cookieSession = require('cookie-session');
+const cron = require('node-cron');
 
 const userRouter = require('./src/routers/userRouter');
 const authRoutes = require('./src/routers/authRoutes');
@@ -25,6 +26,7 @@ const protect = require('./src/middlewares/protect');
 const restrictTo = require('./src/middlewares/restrictTo');
 const catchAsync = require('./src/utils/catchAsync');
 const Contact = require('./src/models/Contact');
+const Auction = require('./src/models/Auction');
 
 // view engine setup
 app.set('view engine', 'ejs');
@@ -88,6 +90,40 @@ app.use(xss()); //    protect from molision code coming from html
 app.use((req, res, next) => {
   console.log('running');
   next();
+});
+
+//* Cron-Job
+
+const manageAuctions = async (auction) => {
+  const currentDate = new Date();
+  const timeLineDate = new Date(auction.timeLine);
+  if (timeLineDate < currentDate) {
+    auction.status = 'archived';
+  }
+  // //* after 30-days
+  // let thirtyDays = new Date(auction.timeLine);
+  // thirtyDays.setHours(thirtyDays.getHours() + 24 * 30);
+
+  const claimExpiryDate = new Date(auction.claimExpiry);
+  if (
+    currentDate.getFullYear() === claimExpiryDate.getFullYear() &&
+    currentDate.getMonth() === claimExpiryDate.getMonth() &&
+    currentDate.getDate() === claimExpiryDate.getDate()
+  ) {
+    auction.status = 'unClaimed';
+  }
+
+  await auction.save();
+};
+
+cron.schedule('*/20 * * * * *', async () => {
+  const auctions = await Auction.find({
+    $or: [{ status: 'published' }, { status: 'archived' }],
+  });
+  auctions.forEach((auction) => {
+    manageAuctions(auction);
+  });
+  console.log(' auctions ', auctions.length);
 });
 
 // routes
