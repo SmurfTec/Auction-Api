@@ -62,7 +62,8 @@ const auctionSchema = new mongoose.Schema(
       required: [true, 'Plz select an auction type'],
     },
 
-    //^ tagged person/account anything
+    twitterTarget: String,
+    instagramTarget: String,
 
     claim: {
       type: Boolean,
