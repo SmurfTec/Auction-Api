@@ -60,6 +60,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
     notifications: [
       {
         type: mongoose.Schema.Types.ObjectId,
