@@ -26,6 +26,7 @@ const clientSchema = new mongoose.Schema({
   //* in pearpop they are geting tiktok account name for verification and instagram oauth
 
   twitterProfile: {
+    userId: String,
     username: String,
     displayName: String,
     email: String,

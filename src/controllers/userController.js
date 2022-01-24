@@ -28,6 +28,8 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
 
 exports.getMe = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user._id);
+  // user.twitterProfile = undefined;
+  // await user.save();
 
   if (user.__type === 'User') {
     await User.populate(user, {

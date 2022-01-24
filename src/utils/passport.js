@@ -22,10 +22,12 @@ passport.use(
       includeEmail: true,
     },
     async function (req, accessToken, refreshToken, profile, done) {
+      console.log('profile', profile);
       await Client.findByIdAndUpdate(
         req.session.user,
         {
           twitterProfile: {
+            userId: profile.id,
             username: profile.username,
             displayName: profile.displayName,
             email: profile._json?.email,

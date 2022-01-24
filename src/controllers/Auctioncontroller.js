@@ -6,15 +6,7 @@ const WatchList = require('../models/WatchList');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const sendNotification = require('./NotificationController');
-var Twitter = require('twitter');
-
-//* FOR TWEETS
-var client = new Twitter({
-  consumer_key: process.env.TWITTER_CONSUMER_KEY,
-  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-  access_token_key: process.env.TWITTER_ACCESS_TOKEN,
-  access_token_secret: process.env.TWITTER_TOKEN_SECRET,
-});
+const sendAuctionTweet = require('../services/sendAuctionTweet');
 
 exports.createAuction = catchAsync(async (req, res, next) => {
   const { timeLine } = req.body;
@@ -51,36 +43,21 @@ exports.createAuction = catchAsync(async (req, res, next) => {
   await Auction.populate(auction, {
     path: 'user',
     model: User,
-    select: 'firstName lastName name',
+    select: 'firstName lastName name twitter',
   });
-
-  if (auction.type === 'specific' && auction.status === 'published') {
-    //* tweet to specific purson
-
-    console.log(
-      `hello umad @${auction.twitterTarget} an auction has been created ${auction.title} in which you are tagged. Starting bid is ${auction.startingPrice}`
-    );
-
-    client.post(
-      'statuses/update',
-      {
-        status: `hello @${auction.twitterTarget} ! an auction has been created ${auction.title} in which you are tagged. Starting bid is ${auction.startingPrice}`,
-      },
-      function (error, tweet, res) {
-        if (error) {
-          console.log('error', error);
-        }
-        console.log('tweet', tweet);
-        // console.log('response', res);
-      }
-    );
-    console.log(' tweet send....');
-  }
 
   res.status(200).json({
     status: 'success',
     auction,
   });
+
+  if (auction.type === 'specific' && auction.status === 'published') {
+    sendAuctionTweet({
+      twitterTarget: auction.twitterTarget,
+      title: auction.title,
+      startingPrice: auction.startingPrice,
+    });
+  }
 });
 
 exports.getAllAuctions = catchAsync(async (req, res, next) => {
@@ -101,14 +78,20 @@ exports.getAllAuctions = catchAsync(async (req, res, next) => {
 
 exports.myAuctions = catchAsync(async (req, res, next) => {
   // const auctions = await Auction.find({ user: req.user._id }).populate({
-  const auctions = await Auction.find({
+  let query = Auction.find({
     user: req.user._id,
     // status: 'inProgress',
-  }).populate({
+  });
+
+  if (req.query.status) query = query.find({ status: req.query.status });
+
+  query = query.populate({
     path: 'user',
     model: User,
     select: 'firstName lastName name',
   });
+
+  const auctions = await query;
 
   res.status(200).json({
     status: 'success',
@@ -243,21 +226,16 @@ exports.updateAuction = catchAsync(async (req, res, next) => {
     auction: updateAuction,
   });
 
-  if (auction.type === 'specific') {
-    //* tweet to specific purson
-    client.post(
-      'statuses/update',
-      {
-        status: `hello umad @U_Ahmad_11 an auction has been created ${auction.title} starting bid is ${auction.startingPrice}`,
-      },
-      function (error, tweet, res) {
-        if (error) {
-          console.log('error', error);
-        }
-        console.log('tweet', tweet);
-        console.log('response', res);
-      }
-    );
+  // * If auction's status changed from inProgress to Published, then sent tweet
+  if (
+    updateAuction.type === 'specific' &&
+    updateAuction.status === 'published'
+  ) {
+    sendAuctionTweet({
+      twitterTarget: updateAuction.twitterTarget,
+      title: updateAuction.title,
+      startingPrice: updateAuction.startingPrice,
+    });
   }
 });
 
