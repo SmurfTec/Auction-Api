@@ -77,6 +77,8 @@ const limiter = rateLimit({
     ' Too many req from this IP , please Try  again in an Hour ! ',
 });
 
+app.use('/api', limiter);
+
 //  Body Parser  => reading data from body into req.body protect from scraping etc
 app.use(express.json({ limit: '10kb' }));
 
@@ -116,7 +118,7 @@ const manageAuctions = async (auction) => {
   await auction.save();
 };
 
-cron.schedule('*/20 * * * * *', async () => {
+cron.schedule('0 0 0 * * *', async () => {
   const auctions = await Auction.find({
     $or: [{ status: 'published' }, { status: 'archived' }],
   });
