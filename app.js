@@ -28,6 +28,7 @@ const restrictTo = require('./src/middlewares/restrictTo');
 const catchAsync = require('./src/utils/catchAsync');
 const Contact = require('./src/models/Contact');
 const Auction = require('./src/models/Auction');
+const { handleWebhook } = require('./src/controllers/paymentController');
 
 // view engine setup
 app.set('view engine', 'ejs');
@@ -56,7 +57,20 @@ app.use(passport.session());
 // }
 // app.use(cors(corsOptions))
 
-app.use(express.json());
+// app.use(express.json());
+
+app.use(
+  express.json({
+    // We need the raw body to verify webhook signatures.
+    // Let's compute it only when hitting the Stripe webhook endpoint.
+    verify: function (req, res, buf) {
+      if (req.originalUrl.startsWith('/webhook')) {
+        console.log(`req.body`, req.body);
+        req.rawBody = buf.toString();
+      }
+    },
+  })
+);
 
 console.log(process.env.NODE_ENV);
 
@@ -135,6 +149,9 @@ cron.schedule('0 0 0 * * *', async () => {
 });
 
 // routes
+// Webhook handler for asynchronous events.
+app.post('/webhook', handleWebhook);
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRouter);
 app.use('/api/auctions', auctionRouter);

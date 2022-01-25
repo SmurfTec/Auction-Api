@@ -4,8 +4,6 @@ const InstagramStrategy = require('passport-instagram').Strategy;
 const passport = require('passport');
 const Client = require('../models/Client');
 
-const CLIENT_URL = `https://auction-frontend-brown.vercel.app/`;
-
 TWITTER_CONSUMER_KEY = process.env.TWITTER_CONSUMER_KEY;
 TWITTER_CONSUMER_SECRET = process.env.TWITTER_CONSUMER_SECRET;
 INSTAGRAM_CONSUMER_KEY = process.env.INSTAGRAM_CONSUMER_KEY;
