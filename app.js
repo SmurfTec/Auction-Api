@@ -18,6 +18,7 @@ const auctionRouter = require('./src/routers/AuctionRouter');
 const categoryRouter = require('./src/routers/categoryRouter');
 const chatRouter = require('./src/routers/chatRouter');
 const socialRouter = require('./src/routers/socialAccount');
+const claimRequestRouter = require('./src/routers/claimRequestRouter');
 
 const globalErrorHandler = require('./src/middlewares/globalErrorHandler');
 
@@ -140,6 +141,7 @@ app.use('/api/auctions', auctionRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/chats', chatRouter);
 app.use('/api/social', socialRouter);
+app.use('/api/claim-requests', claimRequestRouter);
 
 app.get(
   '/api/contacts',

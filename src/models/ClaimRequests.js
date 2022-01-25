@@ -23,6 +23,11 @@ const claimRequestSchema = new mongoose.Schema(
       minlength: [50, 'firstname must be greater than 50'],
       required: [true, 'Provide message for Claim Request'],
     },
+    status: {
+      type: String,
+      enum: ['pending', 'accepted', 'rejected'],
+      default: 'pending',
+    },
   },
   {
     timestamps: true,
