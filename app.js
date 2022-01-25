@@ -11,6 +11,7 @@ const xss = require('xss-clean');
 const path = require('path');
 const cookieSession = require('cookie-session');
 const cron = require('node-cron');
+const bodyParser = require('body-parser');
 
 const userRouter = require('./src/routers/userRouter');
 const authRoutes = require('./src/routers/authRoutes');
@@ -59,18 +60,24 @@ app.use(passport.session());
 
 // app.use(express.json());
 
-app.use(
-  express.json({
-    // We need the raw body to verify webhook signatures.
-    // Let's compute it only when hitting the Stripe webhook endpoint.
-    verify: function (req, res, buf) {
-      if (req.originalUrl.startsWith('/webhook')) {
-        console.log(`req.body`, req.body);
-        req.rawBody = buf.toString();
-      }
-    },
-  })
-);
+// app.use(
+//   express.json({
+//     // We need the raw body to verify webhook signatures.
+//     // Let's compute it only when hitting the Stripe webhook endpoint.
+//     verify: function (req, res, buf) {
+//       if (req.originalUrl.startsWith('/webhook')) {
+//         console.log(`webhook verify`);
+//         console.log(`req.body`, req.body);
+//         console.log(`buf`, buf);
+//         req.rawBody = buf.toString();
+//       }
+//     },
+//   })
+// );
+// Stripe webhook, BEFORE body-parser, because stripe needs the body as stream
+app.post('/webhook', express.raw({ type: 'application/json' }), handleWebhook);
+// Webhook handler for asynchronous events.
+// app.post('/webhook', handleWebhook);
 
 console.log(process.env.NODE_ENV);
 
@@ -94,7 +101,7 @@ const limiter = rateLimit({
 // app.use('/api', limiter);
 
 //  Body Parser  => reading data from body into req.body protect from scraping etc
-app.use(express.json({ limit: '10kb' }));
+// app.use(express.json({ limit: '10kb' }));
 
 // Data sanitization against NoSql query injection
 app.use(mongoSanitize()); //   filter out the dollar signs protect from  query injection attact
@@ -149,8 +156,6 @@ cron.schedule('0 0 0 * * *', async () => {
 });
 
 // routes
-// Webhook handler for asynchronous events.
-app.post('/webhook', handleWebhook);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRouter);

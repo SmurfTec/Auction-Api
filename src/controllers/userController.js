@@ -4,6 +4,8 @@ const Notification = require('../models/Notification');
 const Contact = require('../models/Contact');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const stripe = require('./../utils/stripe');
+const { clientDomain } = require('../utils/constants');
 
 exports.setMe = catchAsync(async (req, res, next) => {
   // console.log(`req.headers.origin`, req.headers.origin);
@@ -44,6 +46,8 @@ exports.getMe = catchAsync(async (req, res, next) => {
 });
 
 exports.getUser = catchAsync(async (req, res, next) => {
+  console.log('getUser');
+
   const user = await User.findById(req.params.id);
 
   if (!user)
@@ -139,5 +143,32 @@ exports.readNotifications = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
+  });
+});
+
+exports.getAccountLink = catchAsync(async (req, res, next) => {
+  console.log('account-onboard');
+  const userAccount = req.user.stripeAccount;
+
+  let query;
+  if (userAccount) query = stripe.accounts.retrieve(userAccount);
+  else
+    query = stripe.accounts.create({
+      type: 'express',
+      email: req.user.email,
+    });
+
+  const account = await query;
+
+  const accountLink = await stripe.accountLinks.create({
+    account: account.id,
+    refresh_url: `${clientDomain}/account`,
+    return_url: `${clientDomain}/account`,
+    type: 'account_onboarding',
+  });
+
+  res.json({
+    status: 'success',
+    url: accountLink,
   });
 });

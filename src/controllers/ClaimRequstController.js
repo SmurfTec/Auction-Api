@@ -105,13 +105,6 @@ exports.handleStatus = catchAsync(async (req, res, next) => {
     });
   }
 
-  // claimRequest.status = 'pending';
-  // await claimRequest.save();
-  // return res.status(200).json({
-  //   status: 'success',
-  //   claimRequest,
-  // });
-
   // * Create a Stripe Session and redirect her
   const session = await stripe.checkout.sessions.create({
     customer_email: req.user.email,
@@ -122,19 +115,22 @@ exports.handleStatus = catchAsync(async (req, res, next) => {
     line_items: [
       {
         name: `${req.user.name} Payment for Accepting Claim.`,
-        description: `Auction Claim Acceptance Payment of auction ${claimRequest.auction._id}`,
+        description: `Claim Acceptance Payment for auction ${claimRequest.auction._id}`,
         amount: claimRequest.claimBid.biddingPrice * 100, //? 100 Cents
         currency: 'USD',
         quantity: 1,
       },
     ],
-    payment_intent_data: {
-      application_fee_amount: 0, //* 0 Because we'll get amount when paying to sellers
-    },
+    // payment_intent_data: {
+    // application_fee_amount: 0, //* 0 Because we'll get amount when paying to sellers
+    // transfer_data: {
+    //   destination: 'acct_1I67ykEPDzqfAEED',
+    // },
+    // },
     metadata: {
       claimRequest: claimRequest._id.toString(),
     },
   });
 
-  res.redirect(session.url);
+  res.json({ url: session.url });
 });

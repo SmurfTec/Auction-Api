@@ -4,7 +4,6 @@ const User = require('./User');
 
 const clientSchema = new mongoose.Schema({
   photo: String,
-
   about: {
     type: String,
     trim: true,
@@ -41,6 +40,13 @@ const clientSchema = new mongoose.Schema({
   isVerified: {
     type: Boolean,
     default: true, //^ it needs to be false default bec users social-accounts needs to be properly-verified
+  },
+
+  stripeAccount: {
+    id: String,
+    charges_enabled: Boolean,
+    details_submitted: Boolean,
+    capabilities: Object,
   },
 
   paymentDetails: {
