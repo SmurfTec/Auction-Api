@@ -38,6 +38,15 @@ const auctionSchema = new mongoose.Schema(
         message: `startingPrice can't be nagative`,
       },
     },
+    winningPrice: {
+      type: Number,
+      validate: {
+        validator: function (el) {
+          return el > 0;
+        },
+        message: `winningPrice can't be nagative`,
+      },
+    },
     video: {
       type: String,
     },
@@ -95,11 +104,23 @@ const auctionSchema = new mongoose.Schema(
     publishDate: {
       type: Date,
     },
+    claimRequests: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ClaimRequest',
+      },
+    ],
   },
   {
     timestamps: true,
   }
 );
+
+auctionSchema.pre(/save/, function (next) {
+  if (this.startingPrice) this.startingPrice = parseInt(this.startingPrice);
+  if (this.winningPrice) this.winningPrice = parseInt(this.winningPrice);
+  next();
+});
 
 auctionSchema.pre(/^find/, function (next) {
   this.sort('-createdAt');

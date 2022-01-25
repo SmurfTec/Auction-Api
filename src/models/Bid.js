@@ -15,6 +15,12 @@ const bidSchema = new mongoose.Schema(
   }
 );
 
+bidSchema.pre(/save/, function (next) {
+  if (this.biddingPrice) this.biddingPrice = parseInt(this.biddingPrice);
+
+  next();
+});
+
 bidSchema.pre(/^find/, function (next) {
   this.sort('-createdAt');
   next();

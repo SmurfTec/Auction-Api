@@ -17,7 +17,7 @@ const notificationSchema = new mongoose.Schema(
     type: {
       type: String,
       required: [true, 'Plz provide Notification Type'],
-      enum: ['account', 'auction', 'bid'],
+      enum: ['account', 'auction', 'bid', 'claimRequest'],
     },
     avatar: String,
     isRead: {

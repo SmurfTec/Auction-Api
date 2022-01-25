@@ -11,16 +11,14 @@ router
   .get(auctionController.getAllAuctions) //* only published/live One's or
   .post(protect, auctionController.createAuction);
 
-router
-  .route('/myauctions')
-  .get(protect, auctionController.myAuctions);
+router.route('/myauctions').get(protect, auctionController.myAuctions);
 
-//* claim Auction
-router.route('/claim').patch(protect, auctionController.claimAuction);
-
+//* claim Auction on a bid
 router
-  .route('/watchlist')
-  .get(protect, auctionController.getmyWatchList);
+  .route('/:auctionId/:bidId/claim')
+  .post(protect, auctionController.claimAuction);
+
+router.route('/watchlist').get(protect, auctionController.getmyWatchList);
 
 //* only update and delete the auction if its not published yet
 router
@@ -30,9 +28,7 @@ router
   .delete(protect, auctionController.deleteAuction);
 
 //* published the auction
-router
-  .route('/:id/publish')
-  .patch(protect, auctionController.publishAuction);
+router.route('/:id/publish').patch(protect, auctionController.publishAuction);
 
 //*  create Bid
 router.route('/:id/bid').patch(protect, bidController.createBid);

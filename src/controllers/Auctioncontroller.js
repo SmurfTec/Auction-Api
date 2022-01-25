@@ -7,6 +7,8 @@ const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const sendNotification = require('./NotificationController');
 const sendAuctionTweet = require('../services/sendAuctionTweet');
+const ClaimRequest = require('../models/ClaimRequests');
+const sendNotificationEvent = require('../controllers/NotificationController');
 
 exports.createAuction = catchAsync(async (req, res, next) => {
   const { timeLine } = req.body;
@@ -159,17 +161,52 @@ exports.publishAuction = catchAsync(async (req, res, next) => {
 
 //* ClaimAuction
 exports.claimAuction = catchAsync(async (req, res, next) => {
-  const auction = await Auction.findById(req.params.id);
+  const { message } = req.body;
+  const { auctionId, bidId } = req.params;
+
+  const auction = await Auction.findById(auctionId);
 
   if (!auction)
+    return next(new AppError(`No Auction found against id ${auctionId}`, 404));
+
+  //* Check if user is the targetUser in case of specified auction
+  if (
+    auction.type === 'specific' &&
+    auction.twitterTarget !== req.user.twitterProfile?.username
+  )
     return next(
-      new AppError(`No Auction found against id ${req.params.id}`, 404)
+      new AppError('Only Tagged person in the auction can claim', 400)
     );
 
-  //* payment will be  their
+  // * If auction is specific, then bid is winnerBid
+  let bidQuery;
+  console.log('auction.winningBid', auction.winningBid);
+  if (auction.type === 'specific') bidQuery = Bid.findById(auction.winningBid);
+  else bidQuery = Bid.findById(bidId);
 
+  let bid = await bidQuery;
+  if (!bid) return next(new AppError(`No Bid found against id ${bidId}`, 404));
+
+  // * If user already exists in claimRequests, then DB will generate cast error
+  // * because of compound index in ClaimRequest Schemsa
+  const claimRequest = await ClaimRequest.create({
+    user: req.user._id,
+    message: message,
+    auction: auction._id,
+    claimBid: bid._id,
+  });
+
+  auction.claimRequests = [claimRequest._id, ...auction.claimRequests];
   auction.status = 'claimed';
   await auction.save();
+
+  sendNotificationEvent({
+    title: `You got a Claim Request on auction: "${auction.title}".`,
+    description: `with message ${message.slice(0, 20)}...`,
+    type: 'claimRequest',
+    link: `/claimRequests/?auction=${auction._id}&claimRequest=${claimRequest._id}`,
+    userId: bid.user?._id,
+  });
 
   res.status(200).json({
     status: 'success',

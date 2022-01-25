@@ -6,7 +6,7 @@ const AppError = require('./../utils/appError');
 
 //* BID
 exports.createBid = catchAsync(async (req, res, next) => {
-  const { biddingPrice } = req.body;
+  const { biddingPrice, bidBeaten: bidBeatenId } = req.body;
   const { id } = req.params;
 
   const auction = await Auction.findById(id).populate('bids');
@@ -29,6 +29,7 @@ exports.createBid = catchAsync(async (req, res, next) => {
   });
 
   auction.bids.unshift(bid._id);
+  auction.winningPrice = bid.biddingPrice;
   await auction.save();
   await Auction.populate(auction, 'bids');
   await Auction.populate(auction, {
@@ -41,7 +42,11 @@ exports.createBid = catchAsync(async (req, res, next) => {
     auction,
   });
 
-  //* send notificaiton to staffers
+  // * Send Realtime notifications to auction owner
+  const { io } = require('../../server');
+  io.sockets.emit('newBid', { updatedAuction: auction });
+
+  //* send Email notificaiton to Auction owner
   sendNotificationEvent({
     title: `New Bid made on your auction ${auction.title}`,
     description: `at amount ${biddingPrice}`,
@@ -49,6 +54,15 @@ exports.createBid = catchAsync(async (req, res, next) => {
     link: `/auctionDetails/${auction._id}`,
     userId: auction.user._id,
   });
-  const { io } = require('../server');
-  io.sockets.emit('newBid', { updatedAuction: auction });
+
+  //* send notificaiton to bidder jiss ki bid beat hue hai
+  const bidBeaten = await Bid.findById(bidBeatenId);
+  if (!bidBeaten) return;
+  sendNotificationEvent({
+    title: `Your bid got beaten on auction: "${auction.title}".`,
+    description: `at amount ${biddingPrice}`,
+    type: 'bid',
+    link: `/auctionDetails/${auction._id}`,
+    userId: bidBeaten.user?._id,
+  });
 });

@@ -9,7 +9,7 @@ const sendNotificationEvent = async ({
   link,
   userId,
 }) => {
-  const { io } = require('../server');
+  const { io } = require('../../server');
   //* send notification to user
   const notification = await Notification.create({
     title,

@@ -73,11 +73,10 @@ app.use(cors());
 const limiter = rateLimit({
   max: 100, //   max number of limits
   windowMs: 60 * 60 * 1000, // hour
-  message:
-    ' Too many req from this IP , please Try  again in an Hour ! ',
+  message: ' Too many req from this IP , please Try  again in an Hour ! ',
 });
 
-app.use('/api', limiter);
+// app.use('/api', limiter);
 
 //  Body Parser  => reading data from body into req.body protect from scraping etc
 app.use(express.json({ limit: '10kb' }));
@@ -101,6 +100,10 @@ const manageAuctions = async (auction) => {
   const timeLineDate = new Date(auction.timeLine);
   if (timeLineDate < currentDate) {
     auction.status = 'archived';
+    // * making winningBid and winning Price,
+    if (auction.bids?.[0]) {
+      auction.winningBid = auction.bids?.[0];
+    }
   }
   // //* after 30-days
   // let thirtyDays = new Date(auction.timeLine);
@@ -118,7 +121,9 @@ const manageAuctions = async (auction) => {
   await auction.save();
 };
 
+// cron.schedule('*/20 * * * * *', async () => {
 cron.schedule('0 0 0 * * *', async () => {
+  console.log('cron');
   const auctions = await Auction.find({
     $or: [{ status: 'published' }, { status: 'archived' }],
   });
@@ -151,9 +156,7 @@ app.get(
 );
 // handling all (get,post,update,delete.....) unhandled routes
 app.all('*', (req, res, next) => {
-  next(
-    new AppError(`Can't find ${req.originalUrl} on the server`, 404)
-  );
+  next(new AppError(`Can't find ${req.originalUrl} on the server`, 404));
 });
 
 // error handling middleware
