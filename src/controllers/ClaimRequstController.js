@@ -100,6 +100,14 @@ exports.handleStatus = catchAsync(async (req, res, next) => {
   if (!claimRequest)
     return next(new AppError(`Can't find any Claim Request for id ${id}`, 400));
 
+  if (!claimRequest.claimBid)
+    return next(
+      new AppError(
+        `Only the person who made the bid can accept the claim on bid`,
+        403
+      )
+    );
+
   // * If status is rejected, simple update the request
   if (status === 'rejected') {
     claimRequest.status = 'rejected';
@@ -126,12 +134,18 @@ exports.handleStatus = catchAsync(async (req, res, next) => {
         quantity: 1,
       },
     ],
-    // payment_intent_data: {
-    // application_fee_amount: 0, //* 0 Because we'll get amount when paying to sellers
-    // transfer_data: {
-    //   destination: 'acct_1I67ykEPDzqfAEED',
-    // },
-    // },
+    payment_intent_data: {
+      // application_fee_amount: 0, //* 0 Because we'll get amount when paying to sellers
+      // ! Only if we want to make direct transfer
+      // transfer_data: {
+      //   destination: 'acct_1I67ykEPDzqfAEED',
+      // },
+      description: `Claim Acceptance Payment for auction ${claimRequest.auction._id}`,
+      metadata: {
+        claimRequest: claimRequest._id.toString(),
+      },
+    },
+
     metadata: {
       claimRequest: claimRequest._id.toString(),
     },

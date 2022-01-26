@@ -28,6 +28,12 @@ const claimRequestSchema = new mongoose.Schema(
       enum: ['pending', 'accepted', 'rejected'],
       default: 'pending',
     },
+    bidderPaymentId: String, //* id of stripe payment intent object
+    bidderPaymentStatus: {
+      type: Boolean,
+      default: false,
+    },
+    // bidderPayment : String,
   },
   {
     timestamps: true,

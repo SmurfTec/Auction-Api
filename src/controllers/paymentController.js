@@ -1,5 +1,7 @@
 const Client = require('../models/Client');
 const stripe = require('../utils/stripe');
+const ClaimRequest = require('../models/ClaimRequests');
+const sendNotificationEvent = require('../controllers/NotificationController');
 
 const directEndpointSecret = process.env.STRIPE_DIRECT_WEBHOOK_SECRET;
 const connectEndpointSecret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET;
@@ -24,18 +26,70 @@ exports.handleDirectWebhook = async (req, res) => {
   console.log('data', data);
   console.log('event.type', event.type);
   switch (event.type) {
-    case 'checkout.session.completed':
-      console.log('checkout.session.completed');
+    // * This only triggered when session completed but It doesn;t guarantees
+    // * that payment is successfull or not
+    // case 'checkout.session.completed':
+    //   console.log('checkout.session.completed');
 
-      // Then define and call a function to handle the event checkout.session.completed
-      break;
-    case 'checkout.session.async_payment_succeeded':
-      console.log('checkout.session.async_payment_succeeded');
+    // Then define and call a function to handle the event checkout.session.completed
+    // break;
+
+    case 'payment_intent.succeeded':
+      console.log('payment_intent.succeeded');
+      const claimRequest = await ClaimRequest.findById(
+        data.metadata?.claimRequest
+      )
+        .populate({
+          path: 'claimBid',
+        })
+        .populate({
+          path: 'user',
+          select: 'firstName lastName email name twitterProfile',
+        })
+        .populate({
+          path: 'auction',
+          select: `title`,
+        });
+
+      if (!claimRequest) {
+        // ! Wrong metadata at the time of session crreation
+        // * Possible actions are send email to customer and  refund payment and also notify admin
+        return;
+      }
+      claimRequest.status = 'accepted';
+      claimRequest.bidderPaymentId = data.id;
+      claimRequest.bidderPaymentStatus = true;
+      await claimRequest.save();
+
+      // * Send Notifications to Bidder and claimant
+      sendNotificationEvent({
+        title: `Your Payment Accepted for auction ${claimRequest.auction?.title}".`,
+        description: `for Claim Request ${claimRequest.message}`,
+        type: 'claimRequest',
+        link: `/claim-requests/?claimRequest=${claimRequest._id}`,
+        userId: claimRequest.claimBid?.user?._id,
+      });
+
+      sendNotificationEvent({
+        title: `The Bidder accepted your Claim Request for auction ${claimRequest.auction?.title}".`,
+        description: `of Claim Request ${claimRequest.message}`,
+        type: 'claimRequest',
+        link: `/claim-requests/?claimRequest=${claimRequest._id}`,
+        userId: claimRequest.user?._id,
+      });
 
       // Then define and call a function to handle the event payment_intent.payment_failed
       break;
-    case 'checkout.session.async_payment_failed':
-      console.log('checkout.session.async_payment_failed');
+    case 'payment_intent.failed':
+      console.log('payment_intent.failed');
+      // * Send Notifications to Bidder
+      sendNotificationEvent({
+        title: `Your Payment Failed for auction ${claimRequest.auction?.title}".`,
+        description: `for Claim Request ${claimRequest.message}`,
+        type: 'claimRequest',
+        link: `/claim-requests/?claimRequest=${claimRequest._id}`,
+        userId: claimRequest.claimBid?.user?._id,
+      });
       // Then define and call a function to handle the event payment_intent.succeeded
       break;
     case 'payout.failed':
