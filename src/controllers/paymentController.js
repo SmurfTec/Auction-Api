@@ -1,9 +1,10 @@
 const Client = require('../models/Client');
 const stripe = require('../utils/stripe');
 
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const directEndpointSecret = process.env.STRIPE_DIRECT_WEBHOOK_SECRET;
+const connectEndpointSecret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET;
 
-exports.handleWebhook = async (req, res) => {
+exports.handleDirectWebhook = async (req, res) => {
   console.log('Webhook Event Received');
   const sig = req.headers['stripe-signature'];
 
@@ -11,7 +12,72 @@ exports.handleWebhook = async (req, res) => {
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    event = stripe.webhooks.constructEvent(req.body, sig, directEndpointSecret);
+  } catch (err) {
+    console.log('err', err);
+    res.status(400).send(`Webhook Error: ${err.message}`);
+    return;
+  }
+
+  // Handle the event
+  const data = event.data.object;
+  console.log('data', data);
+  console.log('event.type', event.type);
+  switch (event.type) {
+    case 'checkout.session.completed':
+      console.log('checkout.session.completed');
+
+      // Then define and call a function to handle the event checkout.session.completed
+      break;
+    case 'checkout.session.async_payment_succeeded':
+      console.log('checkout.session.async_payment_succeeded');
+
+      // Then define and call a function to handle the event payment_intent.payment_failed
+      break;
+    case 'checkout.session.async_payment_failed':
+      console.log('checkout.session.async_payment_failed');
+      // Then define and call a function to handle the event payment_intent.succeeded
+      break;
+    case 'payout.failed':
+      console.log('payout.failed');
+
+      // Then define and call a function to handle the event payout.failed
+      break;
+    case 'payout.paid':
+      console.log('payout.paid');
+
+      // Then define and call a function to handle the event payout.paid
+      break;
+    case 'transfer.failed':
+      console.log('transfer.failed', transfer.failed);
+
+      // Then define and call a function to handle the event transfer.failed
+      break;
+    case 'transfer.paid':
+      console.log('transfer.paid');
+
+      // Then define and call a function to handle the event transfer.paid
+      break;
+    default:
+      console.log(`Unhandled event type ${event.type}`);
+  }
+
+  // Return a 200 res to acknowledge receipt of the event
+  res.send();
+};
+exports.handleConnectWebhook = async (req, res) => {
+  console.log('Webhook Event Received');
+  const sig = req.headers['stripe-signature'];
+
+  console.log('req.body', req.body);
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      connectEndpointSecret
+    );
   } catch (err) {
     console.log('err', err);
     res.status(400).send(`Webhook Error: ${err.message}`);

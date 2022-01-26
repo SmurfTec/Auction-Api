@@ -113,15 +113,16 @@ exports.login = catchAsync(async (req, res, next) => {
 
   // * If request is coming from admin side, then only admins are allowed to login
   console.log('req.headers.origin', req.headers.origin);
-  if (req.headers.origin === adminDomain) {
-    // * Only Admin Can login from this domain
-    if (user.role !== 'admin')
-      return next(new AppError('You are NOT authorized to login ', 403));
-  } else {
-    // * Only Users Can login from this domain
-    if (user.role !== 'user')
-      return next(new AppError('You are NOT authorized to login ', 403));
-  }
+  //  TODO - Uncomment in production
+  // if (req.headers.origin === adminDomain) {
+  //   // * Only Admin Can login from this domain
+  //   if (user.role !== 'admin')
+  //     return next(new AppError('You are NOT authorized to login ', 403));
+  // } else {
+  //   // * Only Users Can login from this domain
+  //   if (user.role !== 'user')
+  //     return next(new AppError('You are NOT authorized to login ', 403));
+  // }
 
   // if eveything is ok
   createsendToken(user, 200, res);

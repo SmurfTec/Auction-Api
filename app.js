@@ -19,6 +19,7 @@ const auctionRouter = require('./src/routers/AuctionRouter');
 const categoryRouter = require('./src/routers/categoryRouter');
 const chatRouter = require('./src/routers/chatRouter');
 const socialRouter = require('./src/routers/socialAccount');
+const bidRouter = require('./src/routers/bidRouter');
 const claimRequestRouter = require('./src/routers/claimRequestRouter');
 
 const globalErrorHandler = require('./src/middlewares/globalErrorHandler');
@@ -29,7 +30,10 @@ const restrictTo = require('./src/middlewares/restrictTo');
 const catchAsync = require('./src/utils/catchAsync');
 const Contact = require('./src/models/Contact');
 const Auction = require('./src/models/Auction');
-const { handleWebhook } = require('./src/controllers/paymentController');
+const {
+  handleDirectWebhook,
+  handleConnectWebhook,
+} = require('./src/controllers/paymentController');
 
 // view engine setup
 app.set('view engine', 'ejs');
@@ -46,6 +50,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+// TODO - UnComment in production
 // var whitelist = ['http://example1.com', 'http://example2.com']
 // var corsOptions = {
 //   origin: function (origin, callback) {
@@ -58,26 +63,23 @@ app.use(passport.session());
 // }
 // app.use(cors(corsOptions))
 
-// app.use(express.json());
-
-// app.use(
-//   express.json({
-//     // We need the raw body to verify webhook signatures.
-//     // Let's compute it only when hitting the Stripe webhook endpoint.
-//     verify: function (req, res, buf) {
-//       if (req.originalUrl.startsWith('/webhook')) {
-//         console.log(`webhook verify`);
-//         console.log(`req.body`, req.body);
-//         console.log(`buf`, buf);
-//         req.rawBody = buf.toString();
-//       }
-//     },
-//   })
-// );
 // Stripe webhook, BEFORE body-parser, because stripe needs the body as stream
-app.post('/webhook', express.raw({ type: 'application/json' }), handleWebhook);
+// * Stripe has 2 webhooks types, -DIRECT and CONNECT
+// * Direct is for charges,checkouts etc and connect for platform/connect accounts/multiparty
+app.post(
+  '/webhook/direct',
+  express.raw({ type: 'application/json' }),
+  handleDirectWebhook
+);
+app.post(
+  '/webhook/connect',
+  express.raw({ type: 'application/json' }),
+  handleConnectWebhook
+);
 // Webhook handler for asynchronous events.
 // app.post('/webhook', handleWebhook);
+
+app.use(express.json({ limit: '10kb' }));
 
 console.log(process.env.NODE_ENV);
 
@@ -101,7 +103,6 @@ const limiter = rateLimit({
 // app.use('/api', limiter);
 
 //  Body Parser  => reading data from body into req.body protect from scraping etc
-// app.use(express.json({ limit: '10kb' }));
 
 // Data sanitization against NoSql query injection
 app.use(mongoSanitize()); //   filter out the dollar signs protect from  query injection attact
@@ -163,6 +164,7 @@ app.use('/api/auctions', auctionRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/chats', chatRouter);
 app.use('/api/social', socialRouter);
+app.use('/api/bids', bidRouter);
 app.use('/api/claim-requests', claimRequestRouter);
 
 app.get(

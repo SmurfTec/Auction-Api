@@ -48,7 +48,7 @@ exports.getMyClaimRequests = catchAsync(async (req, res, next) => {
 
   // * Received
 
-  const claimRequestsReceived = await ClaimRequest.find()
+  let claimRequestsReceived = await ClaimRequest.find()
     .populate({
       path: 'claimBid',
       match: {
@@ -63,6 +63,11 @@ exports.getMyClaimRequests = catchAsync(async (req, res, next) => {
       path: 'auction',
       select: `-bids`,
     });
+
+  // ! We are filtering request with claimBid null, but this is NOT
+  // ! a better solution, we have to find somehthing in query
+
+  claimRequestsReceived = claimRequestsReceived.filter((el) => !!el.claimBid);
 
   res.status(200).json({
     status: 'success',

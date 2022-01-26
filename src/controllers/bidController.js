@@ -66,3 +66,22 @@ exports.createBid = catchAsync(async (req, res, next) => {
     userId: bidBeaten.user?._id,
   });
 });
+
+exports.getBid = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  let query;
+  if (req.user.role === 'admin') query = Bid.findById(id);
+  else
+    query = Bid.findOne({
+      _id: id,
+      user: req.user._id,
+    });
+
+  const bid = await query;
+  if (!bid) return next(new AppError(`Can't find any bid with id ${id}`, 404));
+
+  res.json({
+    status: 'success',
+    bid,
+  });
+});
