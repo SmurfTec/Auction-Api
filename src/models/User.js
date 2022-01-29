@@ -79,7 +79,7 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre(/^find/, function (next) {
-  this.populate({ path: 'notifications', model: Notification });
+  // this.populate({ path: 'notifications', model: Notification });
   next();
 });
 

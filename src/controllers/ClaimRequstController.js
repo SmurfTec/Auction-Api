@@ -6,6 +6,7 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const stripe = require('../utils/stripe');
 const { clientDomain } = require('../utils/constants');
+
 //* BID
 exports.getAllClaimRequests = catchAsync(async (req, res, next) => {
   const claimRequests = await ClaimRequest.find()
@@ -118,6 +119,8 @@ exports.handleStatus = catchAsync(async (req, res, next) => {
     });
   }
 
+  // * If bidder already made payment for some other claim Request
+
   // * Create a Stripe Session and redirect her
   const session = await stripe.checkout.sessions.create({
     customer_email: req.user.email,
@@ -152,4 +155,131 @@ exports.handleStatus = catchAsync(async (req, res, next) => {
   });
 
   res.json({ url: session.url });
+});
+
+exports.createPaymentRequest = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+
+  const claimRequest = await ClaimRequest.findOne({
+    user: req.user._id,
+  })
+    .populate({
+      path: 'claimBid',
+    })
+    .populate({
+      path: 'auction',
+      select: 'title',
+    })
+    .populate({
+      path: 'user',
+      select: 'firstName lastName name',
+    });
+
+  if (!claimRequest)
+    return next(new AppError(`Can't find any Claim Request for id ${id}`, 400));
+
+  if (!req.user.stripeAccount)
+    return next(
+      new AppError(
+        `You must connect your stripe connected account befor sending payment request`,
+        401
+      )
+    );
+
+  // * If status is rejected, simple update the request
+  claimRequest.paymentRequest = {
+    status: 'pending',
+  };
+  await claimRequest.save();
+
+  // * Send notification to bidder that payment request came
+  sendNotificationEvent({
+    title: `You have new payment request for auction ${claimRequest.auction?.title}".`,
+    description: `for Claim Request ${claimRequest.message}`,
+    type: 'claimRequest',
+    link: `/claim-requests/?claimRequest=${claimRequest._id}`,
+    userId: claimRequest.claimBid?._id,
+  });
+
+  res.json({ claimRequest });
+});
+
+exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const claimRequest = await ClaimRequest.findOne({
+    user: req.user._id,
+  })
+    .populate({
+      path: 'claimBid',
+      match: {
+        user: req.user._id,
+      },
+    })
+    .populate({
+      path: 'auction',
+      select: 'title',
+    })
+    .populate({
+      path: 'user',
+      select: 'firstName lastName name',
+    });
+
+  if (!claimRequest)
+    return next(new AppError(`Can't find any Claim Request for id ${id}`, 400));
+
+  if (!claimRequest.claimBid)
+    return next(
+      new AppError(
+        `Only the person who made the bid can accept the claim on bid`,
+        403
+      )
+    );
+
+  if (claimRequest.paymentRequest) {
+    claimRequest.paymentRequest.status = status;
+    await claimRequest.save();
+  }
+
+  // * Transfer payment from platform to service provider's stripeAccount
+  // * We have to save 15% for platform, 1% for auction creator and 84% for service provider
+  let totalAmount = claimRequest.claimBid.biddingPrice;
+  let auctionCreatorAmount = totalAmount * 0.01; //* 1%
+  let serviceProviderAmount = totalAmount * 0.84; // * 84%
+
+  const transfer = await stripe.transfers.create({
+    amount: serviceProviderAmount,
+    currency: 'usd',
+    destination: claimRequest.user?.stripeAccount.id,
+  });
+
+  console.log('transfer', transfer);
+
+  const transfer2 = await stripe.transfers.create({
+    amount: auctionCreatorAmount,
+    currency: 'usd',
+    destination: claimRequest.auction?.user?.stripeAccount.id,
+  });
+
+  console.log('transfer2', transfer2);
+  // * Send notification to service provider that payment received
+  sendNotificationEvent({
+    title: `Your payment request accepted for auction ${claimRequest.auction?.title}".`,
+    description: `and funds transfered to your stripe account`,
+    type: 'claimRequest',
+    link: `/claim-requests/?claimRequest=${claimRequest._id}`,
+    userId: claimRequest.user?._id,
+  });
+
+  // * Send notification to service provider that payment received
+  sendNotificationEvent({
+    title: `You got 1% of your share for creating auction ${claimRequest.auction?.title}".`,
+    description: `Enjoy Lotpot Money`,
+    type: 'claimRequest',
+    link: `/claim-requests/?claimRequest=${claimRequest._id}`,
+    userId: claimRequest.auction?.user?._id,
+  });
+
+  res.json({ claimRequest });
 });

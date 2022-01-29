@@ -5,6 +5,7 @@ const Contact = require('../models/Contact');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const stripe = require('./../utils/stripe');
+const isEmptyObject = require('./../utils/isEmptyObject');
 const { clientDomain } = require('../utils/constants');
 
 exports.setMe = catchAsync(async (req, res, next) => {
@@ -32,6 +33,8 @@ exports.getMe = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user._id);
   // user.twitterProfile = undefined;
   // await user.save();
+
+  await User.populate(user, { path: 'notifications', model: Notification });
 
   if (user.__type === 'User') {
     await User.populate(user, {
@@ -150,15 +153,24 @@ exports.getAccountLink = catchAsync(async (req, res, next) => {
   console.log('account-onboard');
   const userAccount = req.user.stripeAccount;
 
+  console.log('req.user', req.user);
+  console.log('userAccount', userAccount);
+  // * Account can be {}, we have to check its empty object
+  console.log('isEmptyObject(userAccount)', isEmptyObject(userAccount));
   let query;
-  if (userAccount) query = stripe.accounts.retrieve(userAccount);
-  else
+  if (userAccount && isEmptyObject(userAccount) === true) {
+    console.log('get');
+    query = stripe.accounts.retrieve(userAccount);
+  } else {
+    console.log('create');
     query = stripe.accounts.create({
       type: 'express',
       email: req.user.email,
     });
+  }
 
   const account = await query;
+  console.log('account', account);
 
   const accountLink = await stripe.accountLinks.create({
     account: account.id,

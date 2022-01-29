@@ -5,6 +5,7 @@ const AppError = require('../utils/appError');
 const crypto = require('crypto');
 const sendMail = require('../utils/email');
 const Client = require('../models/Client');
+const Notification = require('../models/Notification');
 const { adminDomain } = require('../utils/constants');
 
 const signToken = (id) => {
@@ -111,6 +112,7 @@ exports.login = catchAsync(async (req, res, next) => {
       )
     );
 
+  await User.populate(user, { path: 'notifications', model: Notification });
   // * If request is coming from admin side, then only admins are allowed to login
   console.log('req.headers.origin', req.headers.origin);
   //  TODO - Uncomment in production

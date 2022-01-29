@@ -2,6 +2,7 @@ const Client = require('../models/Client');
 const stripe = require('../utils/stripe');
 const ClaimRequest = require('../models/ClaimRequests');
 const sendNotificationEvent = require('../controllers/NotificationController');
+const Chat = require('../models/Chat');
 
 const directEndpointSecret = process.env.STRIPE_DIRECT_WEBHOOK_SECRET;
 const connectEndpointSecret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET;
@@ -61,13 +62,16 @@ exports.handleDirectWebhook = async (req, res) => {
       claimRequest.bidderPaymentStatus = true;
       await claimRequest.save();
 
+      const claimBidder = claimRequest.claimBid?.user;
+      const claimRequestUser = claimRequest.user;
+
       // * Send Notifications to Bidder and claimant
       sendNotificationEvent({
         title: `Your Payment Accepted for auction ${claimRequest.auction?.title}".`,
         description: `for Claim Request ${claimRequest.message}`,
         type: 'claimRequest',
         link: `/claim-requests/?claimRequest=${claimRequest._id}`,
-        userId: claimRequest.claimBid?.user?._id,
+        userId: claimBidder?._id,
       });
 
       sendNotificationEvent({
@@ -75,8 +79,33 @@ exports.handleDirectWebhook = async (req, res) => {
         description: `of Claim Request ${claimRequest.message}`,
         type: 'claimRequest',
         link: `/claim-requests/?claimRequest=${claimRequest._id}`,
-        userId: claimRequest.user?._id,
+        userId: claimRequestUser?._id,
       });
+
+      // * Create Chat between these two
+      let alreadyChat = await Chat.findOne({
+        $and: [
+          {
+            participants: { $in: [claimBidder_id] },
+          },
+          {
+            participants: { $in: [claimRequestUser] },
+          },
+        ],
+      });
+
+      if (alreadyChat) return;
+      // * ChatAlready Exists, so no need to create newChat
+
+      // * Check if receiver a user
+      const receiver = await Client.findById(claimRequestUser);
+      if (!receiver) return;
+
+      const chat = await Chat.create({
+        participants: [claimBidder_id, claimRequestUser],
+      });
+
+      console.log('chat', chat);
 
       // Then define and call a function to handle the event payment_intent.payment_failed
       break;
@@ -88,7 +117,7 @@ exports.handleDirectWebhook = async (req, res) => {
         description: `for Claim Request ${claimRequest.message}`,
         type: 'claimRequest',
         link: `/claim-requests/?claimRequest=${claimRequest._id}`,
-        userId: claimRequest.claimBid?.user?._id,
+        userId: claimBidder?._id,
       });
       // Then define and call a function to handle the event payment_intent.succeeded
       break;

@@ -12,4 +12,14 @@ router.get('/me', claimRequestController.getMyClaimRequests);
 
 router.patch('/:id/:status', claimRequestController.handleStatus);
 
+router.post(
+  '/:id/sendPaymentRequest',
+  claimRequestController.createPaymentRequest
+);
+
+router.patch(
+  '/:id/handlePaymentRequest',
+  claimRequestController.handlePaymentRequest
+);
+
 module.exports = router;
