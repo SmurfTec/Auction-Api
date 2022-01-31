@@ -29,14 +29,10 @@ var client2 = new TwitterV2({
 
 module.exports = async ({ twitterTarget, startingPrice, title }) => {
   try {
-    console.log('Starting the SHOW');
-    console.log('twitterTarget', twitterTarget);
     //* 1 Get UserId of twitter target
     const res = await client2.get(`users/by/username/${twitterTarget}`, {
       'user.fields': 'id,name,username',
     });
-
-    console.log('res 1', res);
 
     //* 2 Follow specific person
     const res2 = await v2Client.follow(
@@ -44,8 +40,6 @@ module.exports = async ({ twitterTarget, startingPrice, title }) => {
       res.data.id
     );
     // const res2 = await v2Client.unfollow('1476296316468830219', res.data.id);
-
-    console.log('res2 ', res2);
 
     //* 3 tweet to specific person
     client1.post(
@@ -55,13 +49,11 @@ module.exports = async ({ twitterTarget, startingPrice, title }) => {
       },
       function (error, tweet, res) {
         if (error) {
-          console.log('error', error);
         }
         // console.log('tweet', tweet);
         // console.log('response', res);
       }
     );
-    console.log(' tweet sent....');
   } catch (err) {
     console.log('*****');
     console.log('err', err);

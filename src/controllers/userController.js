@@ -16,8 +16,6 @@ exports.setMe = catchAsync(async (req, res, next) => {
 
 // admin
 exports.getAllUsers = catchAsync(async (req, res, next) => {
-  console.log('role :>> ', req.query.role);
-
   let query = User.find();
   if (req.query.role) query.find({ role: req.query.role });
   const users = await query;
@@ -49,8 +47,6 @@ exports.getMe = catchAsync(async (req, res, next) => {
 });
 
 exports.getUser = catchAsync(async (req, res, next) => {
-  console.log('getUser');
-
   const user = await User.findById(req.params.id);
 
   if (!user)
@@ -63,9 +59,6 @@ exports.getUser = catchAsync(async (req, res, next) => {
 });
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  console.log(req.body);
-  console.log(`  req.user._id`, req.user._id);
-
   // * Client.Find... returns null, find the reason
 
   const updatedUser = await User.findByIdAndUpdate(
@@ -106,7 +99,6 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
 exports.createContact = catchAsync(async (req, res, next) => {
   const { email, message, name } = req.body;
 
-  console.log(`req.body`, req.body);
   const contact = await Contact.create({
     name,
     email,
@@ -136,8 +128,6 @@ exports.readNotifications = catchAsync(async (req, res, next) => {
   if (!updateUser)
     return next(new AppError(`Logged User NOT Exists in DB`, 400));
 
-  console.log(`updatedUser`, updateUser);
-
   updateUser.notifications.forEach(async (notification) => {
     await Notification.findByIdAndUpdate(notification._id, {
       isRead: true,
@@ -150,19 +140,13 @@ exports.readNotifications = catchAsync(async (req, res, next) => {
 });
 
 exports.getAccountLink = catchAsync(async (req, res, next) => {
-  console.log('account-onboard');
   const userAccount = req.user.stripeAccount;
 
-  console.log('req.user', req.user);
-  console.log('userAccount', userAccount);
   // * Account can be {}, we have to check its empty object
-  console.log('isEmptyObject(userAccount)', isEmptyObject(userAccount));
   let query;
   if (userAccount && isEmptyObject(userAccount) === true) {
-    console.log('get');
     query = stripe.accounts.retrieve(userAccount);
   } else {
-    console.log('create');
     query = stripe.accounts.create({
       type: 'express',
       email: req.user.email,
@@ -170,7 +154,6 @@ exports.getAccountLink = catchAsync(async (req, res, next) => {
   }
 
   const account = await query;
-  console.log('account', account);
 
   const accountLink = await stripe.accountLinks.create({
     account: account.id,

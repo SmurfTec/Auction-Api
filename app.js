@@ -81,8 +81,6 @@ app.post(
 
 app.use(express.json({ limit: '10kb' }));
 
-console.log(process.env.NODE_ENV);
-
 // set security http headers
 app.use(helmet());
 
@@ -109,12 +107,6 @@ app.use(mongoSanitize()); //   filter out the dollar signs protect from  query i
 
 // Data sanitization against XSS
 app.use(xss()); //    protect from molision code coming from html
-
-// testing middleware
-app.use((req, res, next) => {
-  console.log('running');
-  next();
-});
 
 //* Cron-Job
 
@@ -146,14 +138,12 @@ const manageAuctions = async (auction) => {
 
 // cron.schedule('*/20 * * * * *', async () => {
 cron.schedule('0 0 0 * * *', async () => {
-  console.log('cron');
   const auctions = await Auction.find({
     $or: [{ status: 'published' }, { status: 'archived' }],
   });
   auctions.forEach((auction) => {
     manageAuctions(auction);
   });
-  console.log(' auctions ', auctions.length);
 });
 
 // routes

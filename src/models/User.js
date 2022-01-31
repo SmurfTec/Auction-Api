@@ -118,14 +118,11 @@ userSchema.methods.correctPassword = async function (
   candidate_Password,
   user_Password
 ) {
-  console.log(candidate_Password);
   return await bcrypt.compare(candidate_Password, user_Password);
 };
 
 userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString('hex');
-
-  console.log(resetToken);
 
   this.passwordResetToken = crypto
     .createHash('sha256')

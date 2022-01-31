@@ -20,7 +20,6 @@ passport.use(
       includeEmail: true,
     },
     async function (req, accessToken, refreshToken, profile, done) {
-      console.log('profile', profile);
       await Client.findByIdAndUpdate(
         req.session.user,
         {

@@ -8,13 +8,9 @@ let DB_URL = DBCluster;
 DB_URL = DB_URL.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
 DB_URL = DB_URL.replace('<DB_NAME>', process.env.DB_NAME);
 
-if (process.argv[2] && process.argv[2] === 'dblocal')
-  DB_URL = DBLocal;
-
-console.log(`DB_URL`, DB_URL);
+if (process.argv[2] && process.argv[2] === 'dblocal') DB_URL = DBLocal;
 
 module.exports = () => {
-  console.log('connecting to DB...');
   mongoose
     .connect(DB_URL, {
       useNewUrlParser: true,
