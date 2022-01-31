@@ -70,7 +70,7 @@ exports.handleDirectWebhook = async (req, res) => {
         title: `Your Payment Accepted for auction ${claimRequest.auction?.title}".`,
         description: `for Claim Request ${claimRequest.message}`,
         type: 'claimRequest',
-        link: `/claim-requests/?claimRequest=${claimRequest._id}`,
+        link: `/myauctions/claim-requests/?claimRequest=${claimRequest._id}`,
         userId: claimBidder?._id,
       });
 
@@ -78,7 +78,7 @@ exports.handleDirectWebhook = async (req, res) => {
         title: `The Bidder accepted your Claim Request for auction ${claimRequest.auction?.title}".`,
         description: `of Claim Request ${claimRequest.message}`,
         type: 'claimRequest',
-        link: `/claim-requests/?claimRequest=${claimRequest._id}`,
+        link: `/myauctions/claim-requests/?claimRequest=${claimRequest._id}`,
         userId: claimRequestUser?._id,
       });
 
@@ -86,7 +86,7 @@ exports.handleDirectWebhook = async (req, res) => {
       let alreadyChat = await Chat.findOne({
         $and: [
           {
-            participants: { $in: [claimBidder_id] },
+            participants: { $in: [claimBidder?._id] },
           },
           {
             participants: { $in: [claimRequestUser] },
@@ -102,7 +102,7 @@ exports.handleDirectWebhook = async (req, res) => {
       if (!receiver) return;
 
       const chat = await Chat.create({
-        participants: [claimBidder_id, claimRequestUser],
+        participants: [claimBidder?._id, claimRequestUser],
       });
 
       console.log('chat', chat);
@@ -116,7 +116,7 @@ exports.handleDirectWebhook = async (req, res) => {
         title: `Your Payment Failed for auction ${claimRequest.auction?.title}".`,
         description: `for Claim Request ${claimRequest.message}`,
         type: 'claimRequest',
-        link: `/claim-requests/?claimRequest=${claimRequest._id}`,
+        link: `/myauctions/claim-requests/?claimRequest=${claimRequest._id}`,
         userId: claimBidder?._id,
       });
       // Then define and call a function to handle the event payment_intent.succeeded

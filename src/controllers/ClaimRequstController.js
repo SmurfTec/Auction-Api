@@ -43,7 +43,7 @@ exports.getMyClaimRequests = catchAsync(async (req, res, next) => {
       select: `-bids`,
     })
     .populate({
-      path: 'bid',
+      path: 'claimBid',
       select: 'biddingPrice',
     });
 
@@ -126,8 +126,8 @@ exports.handleStatus = catchAsync(async (req, res, next) => {
     customer_email: req.user.email,
     client_reference_id: `${req.user._id}-${claimRequest._id}`,
     mode: 'payment',
-    success_url: `${clientDomain}/claim-requests?request=${claimRequest._id}`,
-    cancel_url: `${clientDomain}/claim-requests?request=${claimRequest._id}`,
+    success_url: `${clientDomain}/myauctions/claim-requests?request=${claimRequest._id}`,
+    cancel_url: `${clientDomain}/myauctions/claim-requests?request=${claimRequest._id}`,
     line_items: [
       {
         name: `${req.user.name} Payment for Accepting Claim.`,
@@ -197,20 +197,18 @@ exports.createPaymentRequest = catchAsync(async (req, res, next) => {
     title: `You have new payment request for auction ${claimRequest.auction?.title}".`,
     description: `for Claim Request ${claimRequest.message}`,
     type: 'claimRequest',
-    link: `/claim-requests/?claimRequest=${claimRequest._id}`,
-    userId: claimRequest.claimBid?._id,
+    link: `/myauctions/claim-requests/?claimRequest=${claimRequest._id}`,
+    userId: claimRequest.claimBid?.user?._id,
   });
 
-  res.json({ claimRequest });
+  res.json({ status: 'success', claimRequest });
 });
 
 exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  const claimRequest = await ClaimRequest.findOne({
-    user: req.user._id,
-  })
+  const claimRequest = await ClaimRequest.findById(id)
     .populate({
       path: 'claimBid',
       match: {
@@ -220,10 +218,14 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
     .populate({
       path: 'auction',
       select: 'title',
+      populate: {
+        path: 'user',
+        select: 'stripeAccount firstName lastName name',
+      },
     })
     .populate({
       path: 'user',
-      select: 'firstName lastName name',
+      select: 'firstName lastName name stripeAccount',
     });
 
   if (!claimRequest)
@@ -245,8 +247,9 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
   // * Transfer payment from platform to service provider's stripeAccount
   // * We have to save 15% for platform, 1% for auction creator and 84% for service provider
   let totalAmount = claimRequest.claimBid.biddingPrice;
-  let auctionCreatorAmount = totalAmount * 0.01; //* 1%
   let serviceProviderAmount = totalAmount * 0.84; // * 84%
+  let auctionCreatorAmount = totalAmount * 0.01; //* 1%
+  console.log('claimRequest.user', claimRequest.user);
 
   const transfer = await stripe.transfers.create({
     amount: serviceProviderAmount,
@@ -268,7 +271,7 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
     title: `Your payment request accepted for auction ${claimRequest.auction?.title}".`,
     description: `and funds transfered to your stripe account`,
     type: 'claimRequest',
-    link: `/claim-requests/?claimRequest=${claimRequest._id}`,
+    link: `/myauctions/claim-requests/?claimRequest=${claimRequest._id}`,
     userId: claimRequest.user?._id,
   });
 
@@ -277,7 +280,7 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
     title: `You got 1% of your share for creating auction ${claimRequest.auction?.title}".`,
     description: `Enjoy Lotpot Money`,
     type: 'claimRequest',
-    link: `/claim-requests/?claimRequest=${claimRequest._id}`,
+    link: `/myauctions/claim-requests/?claimRequest=${claimRequest._id}`,
     userId: claimRequest.auction?.user?._id,
   });
 

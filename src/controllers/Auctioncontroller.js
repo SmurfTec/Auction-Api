@@ -204,7 +204,7 @@ exports.claimAuction = catchAsync(async (req, res, next) => {
     title: `You got a Claim Request on auction: "${auction.title}".`,
     description: `with message ${message.slice(0, 20)}...`,
     type: 'claimRequest',
-    link: `/claim-requests/?auction=${auction._id}&claimRequest=${claimRequest._id}`,
+    link: `/myauctions/claim-requests/?auction=${auction._id}&claimRequest=${claimRequest._id}`,
     userId: bid.user?._id,
   });
 

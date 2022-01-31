@@ -19,19 +19,20 @@ const sendNotificationEvent = async ({
     link,
   });
 
+  // * Push Notification to user (if userId)
+
+  if (userId) {
+    const updatedUser = await User.findById(userId);
+    if (!updatedUser) return;
+    updatedUser.notifications = [notification, ...updatedUser.notifications];
+    await updatedUser.save();
+  }
+
   //* notification sent to admin side
   io.sockets.emit('newNotification', {
     newNotification: notification,
     userId,
   });
-
-  // * Push Notification to user (if userId)
-
-  if (userId) {
-    const updatedUser = await User.findById(userId);
-    updatedUser.notifications = [notification, ...updatedUser.notifications];
-    await updatedUser.save();
-  }
 };
 
 module.exports = sendNotificationEvent;

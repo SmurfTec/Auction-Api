@@ -56,6 +56,7 @@ exports.createBid = catchAsync(async (req, res, next) => {
   });
 
   //* send notificaiton to bidder jiss ki bid beat hue hai
+  if (!bidBeatenId) return;
   const bidBeaten = await Bid.findById(bidBeatenId);
   if (!bidBeaten) return;
   sendNotificationEvent({

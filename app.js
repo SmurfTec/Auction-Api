@@ -144,8 +144,8 @@ const manageAuctions = async (auction) => {
   await auction.save();
 };
 
-// cron.schedule('*/20 * * * * *', async () => {
-cron.schedule('0 0 0 * * *', async () => {
+cron.schedule('*/20 * * * * *', async () => {
+  // cron.schedule('0 0 0 * * *', async () => {
   console.log('cron');
   const auctions = await Auction.find({
     $or: [{ status: 'published' }, { status: 'archived' }],
