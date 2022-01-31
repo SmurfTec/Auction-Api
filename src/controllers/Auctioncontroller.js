@@ -12,7 +12,6 @@ const sendNotificationEvent = require('../controllers/NotificationController');
 
 exports.createAuction = catchAsync(async (req, res, next) => {
   const { timeLine } = req.body;
-  console.log('timeLine :>> ', timeLine);
 
   const timeline = new Date();
   timeline.setHours(new Date().getHours() + 24 * timeLine);
@@ -180,7 +179,7 @@ exports.claimAuction = catchAsync(async (req, res, next) => {
 
   // * If auction is specific, then bid is winnerBid
   let bidQuery;
-  console.log('auction.winningBid', auction.winningBid);
+  // console.log('auction.winningBid', auction.winningBid);
   if (auction.type === 'specific') bidQuery = Bid.findById(auction.winningBid);
   else bidQuery = Bid.findById(bidId);
 
@@ -301,7 +300,6 @@ exports.deleteAuction = catchAsync(async (req, res, next) => {
   // ! will consider that admin is deleting published auctions
   // * Delete all bids of that auction before deleting that auctino
   const bidPromises = auction.bids.map(async (el) => {
-    console.log('el', el);
     return await Bid.findByIdAndDelete(el);
   });
 

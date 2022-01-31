@@ -92,8 +92,6 @@ exports.login = catchAsync(async (req, res, next) => {
   if (!user)
     return next(new AppError(`No User found against email ${email}`, 404));
 
-  console.log(`user.role`, user.role);
-
   if (
     !user || // check user exist and password correct
     !(await user.correctPassword(password, user.password))
@@ -101,8 +99,6 @@ exports.login = catchAsync(async (req, res, next) => {
     // candinate password,correctpassword
     return next(new AppError('incorrect email or password', 401));
   }
-
-  console.log(`user`, user);
 
   if (user.activated === false)
     return next(

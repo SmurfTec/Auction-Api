@@ -89,20 +89,24 @@ exports.handleDirectWebhook = async (req, res) => {
             participants: { $in: [claimBidder?._id] },
           },
           {
-            participants: { $in: [claimRequestUser] },
+            participants: { $in: [claimRequestUser?._id] },
           },
         ],
       });
 
-      if (alreadyChat) return;
+      if (alreadyChat) {
+        console.log('chat already exists');
+        console.log('alreadyChat', alreadyChat);
+        return;
+      }
       // * ChatAlready Exists, so no need to create newChat
 
       // * Check if receiver a user
-      const receiver = await Client.findById(claimRequestUser);
+      const receiver = await Client.findById(claimRequestUser?._id);
       if (!receiver) return;
 
       const chat = await Chat.create({
-        participants: [claimBidder?._id, claimRequestUser],
+        participants: [claimBidder?._id, claimRequestUser?._id],
       });
 
       console.log('chat', chat);
