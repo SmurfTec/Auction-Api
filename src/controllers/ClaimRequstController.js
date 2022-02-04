@@ -252,7 +252,7 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
   console.log('claimRequest.user', claimRequest.user);
 
   const transfer = await stripe.transfers.create({
-    amount: serviceProviderAmount,
+    amount: serviceProviderAmount * 100, //* In Cents
     currency: 'usd',
     destination: claimRequest.user?.stripeAccount.id,
   });
@@ -260,7 +260,7 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
   console.log('transfer', transfer);
 
   const transfer2 = await stripe.transfers.create({
-    amount: auctionCreatorAmount,
+    amount: auctionCreatorAmount * 100, //* In cents,
     currency: 'usd',
     destination: claimRequest.auction?.user?.stripeAccount.id,
   });
