@@ -251,6 +251,13 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
   let auctionCreatorAmount = totalAmount * 0.01; //* 1%
   console.log('claimRequest.user', claimRequest.user);
 
+  const updatedAuction = await Auction.findByIdAndUpdate(
+    claimRequest.auction?._id,
+    {
+      status: 'completed',
+    }
+  );
+
   const transfer = await stripe.transfers.create({
     amount: serviceProviderAmount * 100, //* In Cents
     currency: 'usd',
@@ -284,5 +291,5 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
     userId: claimRequest.auction?.user?._id,
   });
 
-  res.json({ claimRequest });
+  res.json({ claimRequest, auction: updatedAuction });
 });
