@@ -178,12 +178,7 @@ exports.claimAuction = catchAsync(async (req, res, next) => {
     );
 
   // * If auction is specific, then bid is winnerBid
-  let bidQuery;
-  // console.log('auction.winningBid', auction.winningBid);
-  if (auction.type === 'specific') bidQuery = Bid.findById(auction.winningBid);
-  else bidQuery = Bid.findById(bidId);
-
-  let bid = await bidQuery;
+  let bid = await Bid.findById(bidId);
   if (!bid) return next(new AppError(`No Bid found against id ${bidId}`, 404));
 
   // * If user already exists in claimRequests, then DB will generate cast error
@@ -203,7 +198,7 @@ exports.claimAuction = catchAsync(async (req, res, next) => {
     title: `You got a Claim Request on auction: "${auction.title}".`,
     description: `with message ${message.slice(0, 20)}...`,
     type: 'claimRequest',
-    link: `/myauctions/claim-requests/?auction=${auction._id}&claimRequest=${claimRequest._id}`,
+    link: `/myauctions/claim-requests/?claimRequest=${claimRequest._id}`,
     userId: bid.user?._id,
   });
 
