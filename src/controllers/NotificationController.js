@@ -8,6 +8,7 @@ const sendNotificationEvent = async ({
   isVisitor,
   link,
   userId,
+  ...rest
 }) => {
   const { io } = require('../../server');
   //* send notification to user
@@ -32,6 +33,7 @@ const sendNotificationEvent = async ({
   io.sockets.emit('newNotification', {
     newNotification: notification,
     userId,
+    ...rest,
   });
 };
 

@@ -93,10 +93,10 @@ const auctionSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
-        'inProgress', // the trip is not live yet !
-        'published', // the trip is live now
-        'archived', // the trip will be archived for 30-days for claim
-        'unClaimed', // the trips which are not claimed after 30-days of ending
+        'inProgress', // the auction is not live yet !
+        'published', // the auction is live now
+        'archived', // the auction will be archived for 30-days for claim
+        'unClaimed', // the auctions which are not claimed after 30-days of ending
         'claimed', //  the claimed auctions
       ],
       default: 'inProgress',

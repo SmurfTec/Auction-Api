@@ -126,8 +126,8 @@ exports.handleStatus = catchAsync(async (req, res, next) => {
     customer_email: req.user.email,
     client_reference_id: `${req.user._id}-${claimRequest._id}`,
     mode: 'payment',
-    success_url: `${clientDomain}/myauctions/claim-requests?request=${claimRequest._id}`,
-    cancel_url: `${clientDomain}/myauctions/claim-requests?request=${claimRequest._id}`,
+    success_url: `${clientDomain}/myauctions/claim-requests?tab=received&claimRequest=${claimRequest._id}`,
+    cancel_url: `${clientDomain}/myauctions/claim-requests?tab=received&claimRequest=${claimRequest._id}`,
     line_items: [
       {
         name: `${req.user.name} Payment for Accepting Claim.`,
@@ -197,7 +197,7 @@ exports.createPaymentRequest = catchAsync(async (req, res, next) => {
     title: `You have new payment request for auction ${claimRequest.auction?.title}".`,
     description: `for Claim Request ${claimRequest.message}`,
     type: 'claimRequest',
-    link: `/myauctions/claim-requests/?claimRequest=${claimRequest._id}`,
+    link: `/myauctions/claim-requests/?tab=received&claimRequest=${claimRequest._id}`,
     userId: claimRequest.claimBid?.user?._id,
   });
 
@@ -254,7 +254,7 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
   const updatedAuction = await Auction.findByIdAndUpdate(
     claimRequest.auction?._id,
     {
-      status: 'completed',
+      status: 'claimed',
     }
   );
 
@@ -278,7 +278,7 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
     title: `Your payment request accepted for auction ${claimRequest.auction?.title}".`,
     description: `and funds transfered to your stripe account`,
     type: 'claimRequest',
-    link: `/myauctions/claim-requests/?claimRequest=${claimRequest._id}`,
+    link: `/myauctions/claim-requests/?tab=sent&claimRequest=${claimRequest._id}`,
     userId: claimRequest.user?._id,
   });
 
@@ -287,7 +287,7 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
     title: `You got 1% of your share for creating auction ${claimRequest.auction?.title}".`,
     description: `Enjoy Lotpot Money`,
     type: 'claimRequest',
-    link: `/myauctions/claim-requests/?claimRequest=${claimRequest._id}`,
+    link: `/myauctions/${claimRequest.auction?._id}`,
     userId: claimRequest.auction?.user?._id,
   });
 
