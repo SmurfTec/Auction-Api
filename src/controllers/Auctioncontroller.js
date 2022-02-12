@@ -9,6 +9,7 @@ const sendNotification = require('./NotificationController');
 const sendAuctionTweet = require('../services/sendAuctionTweet');
 const ClaimRequest = require('../models/ClaimRequests');
 const sendNotificationEvent = require('../controllers/NotificationController');
+const ClaimedAuctions = require('../models/ClaimedAuctions');
 
 exports.createAuction = catchAsync(async (req, res, next) => {
   const { timeLine } = req.body;
@@ -319,6 +320,27 @@ exports.deleteAuction = catchAsync(async (req, res, next) => {
 
 //* WATCHLIST
 
+exports.getmyClaimedAuctions = catchAsync(async (req, res, next) => {
+  //* return only published ones
+  let claimedAuctions = await ClaimedAuctions.find({
+    $or: [
+      {
+        bidder: req.user._id,
+      },
+      {
+        claimant: req.user._id,
+      },
+    ],
+  }).populate({
+    path: 'user',
+    select: 'firstName lastName name',
+  });
+
+  res.status(200).json({
+    status: 'success',
+    claimedAuctions,
+  });
+});
 exports.getmyWatchList = catchAsync(async (req, res, next) => {
   //* return only published ones
 

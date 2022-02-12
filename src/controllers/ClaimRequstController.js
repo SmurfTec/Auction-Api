@@ -6,6 +6,7 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const stripe = require('../utils/stripe');
 const { clientDomain } = require('../utils/constants');
+const ClaimedAuctions = require('../models/ClaimedAuctions');
 
 //* BID
 exports.getAllClaimRequests = catchAsync(async (req, res, next) => {
@@ -234,7 +235,7 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
   if (!claimRequest.claimBid)
     return next(
       new AppError(
-        `Only the person who made the bid can accept the claim on bid`,
+        `Only the person who made the bid can accept the payment request on bid`,
         403
       )
     );
@@ -257,6 +258,15 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
       status: 'claimed',
     }
   );
+
+  const claimedAuction = await ClaimedAuctions.create({
+    bidder: claimRequest.claimBid?.user,
+    claimant: claimRequest.user?._id,
+    claimRequest: claimRequest._id,
+    auction: updatedAuction._id,
+  });
+
+  console.log('claimedAuction', claimedAuction);
 
   const transfer = await stripe.transfers.create({
     amount: serviceProviderAmount * 100, //* In Cents

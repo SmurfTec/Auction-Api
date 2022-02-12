@@ -18,6 +18,9 @@ router
   .route('/:auctionId/:bidId/claim')
   .post(protect, auctionController.claimAuction);
 
+router
+  .route('/claimed-auctions')
+  .get(protect, auctionController.getmyClaimedAuctions);
 router.route('/watchlist').get(protect, auctionController.getmyWatchList);
 
 //* only update and delete the auction if its not published yet
