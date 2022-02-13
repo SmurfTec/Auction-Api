@@ -118,6 +118,7 @@ const manageAuctions = async (auction) => {
     // * making winningBid and winning Price,
     if (auction.bids?.[0]) {
       auction.winningBid = auction.bids?.[0];
+      auction.winningPrice = auction.bids?.[0]?.biddingPrice;
     }
   }
   // //* after 30-days
@@ -140,6 +141,9 @@ const manageAuctions = async (auction) => {
 cron.schedule('0 0 0 * * *', async () => {
   const auctions = await Auction.find({
     $or: [{ status: 'published' }, { status: 'archived' }],
+  }).populate({
+    path: 'bids',
+    select: 'biddingPrice',
   });
   auctions.forEach((auction) => {
     manageAuctions(auction);
