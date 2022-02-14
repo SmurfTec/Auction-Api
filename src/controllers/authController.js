@@ -71,12 +71,11 @@ exports.signup = catchAsync(async (req, res, next) => {
     template: 'signupEmail.ejs',
     url: activationURL,
   });
-  // res.status(200).json({
-  //   status: 'Success',
-  //   message: `Email Verification Link Successfully Sent to you email ${user.email}`,
-  //   user,
-  // });
-  createsendToken(user, 201, res);
+  res.status(200).json({
+    status: 'Success',
+    message: `Email Verification Link Successfully Sent to you email ${user.email}`,
+  });
+  // createsendToken(user, 201, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -147,10 +146,7 @@ exports.confirmMail = catchAsync(async (req, res) => {
   user.activationLink = undefined;
   await user.save({ validateBeforeSave: false });
 
-  res.status(200).json({
-    status: 'Success',
-    message: 'Account has been Activated Successfully !',
-  });
+  createsendToken(user, 200, res);
 });
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
@@ -209,7 +205,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   const user = await User.findOne({
     passwordResetToken: hashedToken,
     passwordResetExpires: {
-      $gt: Date.now(),
+      $gt: new Date(),
     },
   });
 
@@ -231,10 +227,10 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   // * If you don't want the user to be logged In after pass reset
   // * Remove token from respone
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  createsendToken(user, 200, res);
+  // res.status(200).json({
+  //   status: 'success',
+  // });
 });
 
 //    Update Password for only logged in user

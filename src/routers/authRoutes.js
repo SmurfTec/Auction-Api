@@ -8,7 +8,7 @@ router.post('/signUp', authController.signup);
 router.post('/login', authController.login);
 
 router.route('/confirmMail/:activationLink').get(authController.confirmMail);
-router.route('/forgotPassword').post(authController.forgotPassword);
+router.route('/forgot-password').post(authController.forgotPassword);
 router.route('/update-password').patch(protect, authController.updatePassword);
 router.route('/resetPassword/:resetToken').patch(authController.resetPassword);
 

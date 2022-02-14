@@ -79,7 +79,7 @@ const clientSchema = new mongoose.Schema({
   passwordResetExpires: Date,
   activated: {
     type: Boolean,
-    default: true, //^ make it false in production
+    default: false, //^ make it false in production
   },
 });
 
