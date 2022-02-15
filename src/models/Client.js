@@ -30,6 +30,13 @@ const clientSchema = new mongoose.Schema({
     displayName: String,
     email: String,
   },
+
+  instagramProfile: {
+    userId: String,
+    username: String,
+    displayName: String,
+    email: String,
+  },
   // socialLogins:{
   // twitter
   // instagram
@@ -39,8 +46,18 @@ const clientSchema = new mongoose.Schema({
 
   isVerified: {
     type: Boolean,
-    default: true, //^ it needs to be false default bec users social-accounts needs to be properly-verified
+    default: false, //^ it needs to be false default bec users social-accounts needs to be properly-verified
   },
+
+  pendingTransactions: [
+    {
+      amount: Number,
+      status: {
+        type: String,
+        enum: ['paid', 'pending'],
+      },
+    },
+  ],
 
   stripeAccount: {
     id: String,

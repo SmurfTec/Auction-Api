@@ -1,4 +1,5 @@
 const Auction = require('../models/Auction');
+const Client = require('../models/Client');
 const Bid = require('../models/Bid');
 const ClaimRequest = require('../models/ClaimRequests');
 const sendNotificationEvent = require('./NotificationController');
@@ -273,16 +274,6 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
     currency: 'usd',
     destination: claimRequest.user?.stripeAccount.id,
   });
-
-  console.log('transfer', transfer);
-
-  const transfer2 = await stripe.transfers.create({
-    amount: auctionCreatorAmount * 100, //* In cents,
-    currency: 'usd',
-    destination: claimRequest.auction?.user?.stripeAccount.id,
-  });
-
-  console.log('transfer2', transfer2);
   // * Send notification to service provider that payment received
   sendNotificationEvent({
     title: `Your payment request accepted for auction ${claimRequest.auction?.title}".`,
@@ -291,15 +282,47 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
     link: `/myauctions/claim-requests/?tab=sent&claimRequest=${claimRequest._id}`,
     userId: claimRequest.user?._id,
   });
+  console.log('transfer', transfer);
 
-  // * Send notification to service provider that payment received
-  sendNotificationEvent({
-    title: `You got 1% of your share for creating auction ${claimRequest.auction?.title}".`,
-    description: `Enjoy Lotpot Money`,
-    type: 'claimRequest',
-    link: `/myauctions/${claimRequest.auction?._id}`,
-    userId: claimRequest.auction?.user?._id,
-  });
+  // * If Auction Creator Doesn't have any stripe account, then ask him to create account
+  if (!claimRequest.auction?.user?.stripeAccount) {
+    console.log('no account');
+    const auctionCreater = await Client.findById(
+      claimRequest.auction?.user?._id
+    );
 
+    auctionCreater.pendingTransactions = [
+      {
+        amount: auctionCreatorAmount * 100,
+        status: 'pending',
+      },
+      ...auctionCreater.pendingTransactions,
+    ];
+    // * Send notification to service provider that payment received
+    sendNotificationEvent({
+      title: `You got 1% of your share for creating auction ${claimRequest.auction?.title}".`,
+      description: `Connect your stripe account to get that share`,
+      type: 'claimRequest',
+      link: `/myauctions/${claimRequest.auction?._id}`,
+      userId: claimRequest.auction?.user?._id,
+    });
+  } else {
+    const transfer2 = await stripe.transfers.create({
+      amount: auctionCreatorAmount * 100, //* In cents,
+      currency: 'usd',
+      destination: claimRequest.auction?.user?.stripeAccount.id,
+    });
+
+    console.log('transfer2', transfer2);
+
+    // * Send notification to service provider that payment received
+    sendNotificationEvent({
+      title: `You got 1% of your share for creating auction ${claimRequest.auction?.title}".`,
+      description: `Enjoy Lotpot Money`,
+      type: 'claimRequest',
+      link: `/myauctions/${claimRequest.auction?._id}`,
+      userId: claimRequest.auction?.user?._id,
+    });
+  }
   res.json({ claimRequest, auction: updatedAuction });
 });

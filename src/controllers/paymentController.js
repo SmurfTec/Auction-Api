@@ -194,6 +194,23 @@ exports.handleConnectWebhook = async (req, res) => {
         }
       );
 
+      // * Pay all his pending transactions
+      const userTransfers = user.pendingTransactions
+        .filter((el) => el.status === 'pending')
+        .map(async (el) => {
+          const transfer = await stripe.transfers.create({
+            amount: auctionCreatorAmount * 100, //* In cents,
+            currency: 'usd',
+            destination: claimRequest.auction?.user?.stripeAccount.id,
+          });
+
+          return transfer;
+        });
+
+      console.log('userTransfers', userTransfers);
+      await Promise.all(userTransfers);
+
+      console.log('userTransfers', userTransfers);
       console.log('user', user);
       // Then define and call a function to handle the event account.updated
       break;

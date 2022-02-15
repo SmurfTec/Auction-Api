@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const sendMail = require('../utils/email');
 const Client = require('../models/Client');
 const Notification = require('../models/Notification');
-const { adminDomain } = require('../utils/constants');
+const { adminDomains } = require('../utils/constants');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -111,15 +111,15 @@ exports.login = catchAsync(async (req, res, next) => {
   // * If request is coming from admin side, then only admins are allowed to login
   console.log('req.headers.origin', req.headers.origin);
   //  TODO - Uncomment in production
-  // if (req.headers.origin === adminDomain) {
-  //   // * Only Admin Can login from this domain
-  //   if (user.role !== 'admin')
-  //     return next(new AppError('You are NOT authorized to login ', 403));
-  // } else {
-  //   // * Only Users Can login from this domain
-  //   if (user.role !== 'user')
-  //     return next(new AppError('You are NOT authorized to login ', 403));
-  // }
+  if (adminDomains.includes(req.headers.origin)) {
+    // * Only Admin Can login from this domain
+    if (user.role !== 'admin')
+      return next(new AppError('You are NOT authorized to login ', 403));
+  } else {
+    // * Only Users Can login from this domain
+    if (user.role !== 'user')
+      return next(new AppError('You are NOT authorized to login ', 403));
+  }
 
   // if eveything is ok
   createsendToken(user, 200, res);
