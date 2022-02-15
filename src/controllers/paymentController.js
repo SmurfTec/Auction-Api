@@ -210,6 +210,9 @@ exports.handleConnectWebhook = async (req, res) => {
       console.log('userTransfers', userTransfers);
       await Promise.all(userTransfers);
 
+      user.pendingTransfers.map((el) => ({ ...el, status: 'paid' }));
+      await user.save();
+
       console.log('userTransfers', userTransfers);
       console.log('user', user);
       // Then define and call a function to handle the event account.updated
