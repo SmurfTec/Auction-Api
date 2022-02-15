@@ -199,9 +199,9 @@ exports.handleConnectWebhook = async (req, res) => {
         .filter((el) => el.status === 'pending')
         .map(async (el) => {
           const transfer = await stripe.transfers.create({
-            amount: auctionCreatorAmount * 100, //* In cents,
+            amount: el.amount, //* In cents,
             currency: 'usd',
-            destination: claimRequest.auction?.user?.stripeAccount.id,
+            destination: data.id,
           });
 
           return transfer;

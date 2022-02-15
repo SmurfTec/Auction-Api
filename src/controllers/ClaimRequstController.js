@@ -285,7 +285,11 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
   console.log('transfer', transfer);
 
   // * If Auction Creator Doesn't have any stripe account, then ask him to create account
-  if (!claimRequest.auction?.user?.stripeAccount) {
+  console.log(
+    'claimRequest.auction',
+    claimRequest.auction?.user?.stripeAccount
+  );
+  if (!claimRequest.auction?.user?.stripeAccount?.id) {
     console.log('no account');
     const auctionCreater = await Client.findById(
       claimRequest.auction?.user?._id
@@ -298,6 +302,7 @@ exports.handlePaymentRequest = catchAsync(async (req, res, next) => {
       },
       ...auctionCreater.pendingTransactions,
     ];
+    await auctionCreater.save();
     // * Send notification to service provider that payment received
     sendNotificationEvent({
       title: `You got 1% of your share for creating auction ${claimRequest.auction?.title}".`,
