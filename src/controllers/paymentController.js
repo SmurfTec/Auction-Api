@@ -83,16 +83,21 @@ exports.handleDirectWebhook = async (req, res) => {
       });
 
       // * Create Chat between these two
-      let alreadyChat = await Chat.findOne({
-        $and: [
-          {
-            participants: { $in: [claimBidder?._id] },
-          },
-          {
-            participants: { $in: [claimRequestUser?._id] },
-          },
-        ],
-      });
+      let alreadyChat = await Chat.findOneAndUpdate(
+        {
+          $and: [
+            {
+              participants: { $in: [claimBidder?._id] },
+            },
+            {
+              participants: { $in: [claimRequestUser?._id] },
+            },
+          ],
+        },
+        {
+          auction: claimRequest.auction,
+        }
+      );
 
       if (alreadyChat) {
         console.log('chat already exists');
@@ -107,6 +112,7 @@ exports.handleDirectWebhook = async (req, res) => {
 
       const chat = await Chat.create({
         participants: [claimBidder?._id, claimRequestUser?._id],
+        auction: claimRequest.auction,
       });
 
       console.log('chat', chat);

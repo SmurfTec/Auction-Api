@@ -192,7 +192,7 @@ exports.claimAuction = catchAsync(async (req, res, next) => {
   });
 
   auction.claimRequests = [claimRequest._id, ...auction.claimRequests];
-  auction.status = 'claimed';
+  // auction.status = 'claimed';
   await auction.save();
 
   sendNotificationEvent({

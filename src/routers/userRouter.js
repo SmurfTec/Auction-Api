@@ -26,6 +26,9 @@ router.route('/').get(protect, restrictTo('admin'), userController.getAllUsers);
 router
   .route('/account-onboard')
   .get(protect, restrictTo('user'), userController.getAccountLink);
+router
+  .route('/account-dashboard')
+  .get(protect, restrictTo('user'), userController.getDashboardLink);
 
 router
   .route('/contact')

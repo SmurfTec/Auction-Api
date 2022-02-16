@@ -167,3 +167,21 @@ exports.getAccountLink = catchAsync(async (req, res, next) => {
     url: accountLink,
   });
 });
+
+exports.getDashboardLink = catchAsync(async (req, res, next) => {
+  const userAccount = req.user.stripeAccount;
+
+  // * Account can be {}, we have to check its empty object
+  let query;
+  if (userAccount && isEmptyObject(userAccount) === true)
+    return next(
+      new AppError('Connect your stripe account before viewing dashboard', 400)
+    );
+
+  const accountLink = await stripe.accounts.createLoginLink(userAccount.id);
+
+  res.json({
+    status: 'success',
+    url: accountLink.url,
+  });
+});
