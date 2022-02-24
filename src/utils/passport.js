@@ -28,7 +28,7 @@ passport.use(
             username: profile.username,
             displayName: profile.displayName,
             email: profile._json?.email,
-            isVerified: true, //! In Future, only make this true if instagram is also attached
+            // isVerified: true, //! In Future, only make this true if instagram is also attached
           },
         },
         { runValidators: true }

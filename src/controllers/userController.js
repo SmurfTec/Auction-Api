@@ -60,7 +60,7 @@ exports.getUser = catchAsync(async (req, res, next) => {
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   // * Client.Find... returns null, find the reason
-
+  console.log('req.body', req.body);
   const updatedUser = await User.findByIdAndUpdate(
     req.user._id,
     { ...req.body },
@@ -70,9 +70,38 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     }
   );
 
+  console.log('updatedUser.instagramProfile', updatedUser.instagramProfile);
+
+  if (req.body.instagramProfile) {
+    updatedUser.instagramProfile = req.body.instagramProfile;
+    await updatedUser.save();
+  }
+
   if (!updatedUser)
     return next(
       new AppError(`Can't find any user with id ${req.user._id}`, 404)
+    );
+
+  res.status(200).json({
+    status: 'success',
+    user: updatedUser,
+  });
+});
+exports.updateUser = catchAsync(async (req, res, next) => {
+  // * Client.Find... returns null, find the reason
+  console.log('req.parmas', req.parmas);
+  const updatedUser = await Client.findByIdAndUpdate(
+    req.params.id,
+    { isVerified: req.body.isVerified },
+    {
+      runValidators: true,
+      new: true,
+    }
+  );
+
+  if (!updatedUser)
+    return next(
+      new AppError(`Can't find any user with id ${req.params.id}`, 404)
     );
 
   res.status(200).json({
