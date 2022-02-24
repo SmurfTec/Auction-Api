@@ -67,7 +67,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   sendMail({
     email: user.email,
     message,
-    subject: 'Your Account Activation Link for Smurf App !',
+    subject: 'Your Account Activation Link for Lotpot Auctions!',
     user,
     template: 'signupEmail.ejs',
     url: activationURL,
