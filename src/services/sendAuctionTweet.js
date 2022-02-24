@@ -1,6 +1,7 @@
 var Twitter = require('twitter');
 var TwitterV2 = require('twitter-v2');
 const { TwitterApi } = require('twitter-api-v2');
+const { clientDomain } = require('../utils/constants');
 // const appOnlyClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN);
 const appOnlyClient = new TwitterApi({
   appKey: process.env.TWITTER_CONSUMER_KEY,
@@ -27,7 +28,7 @@ var client2 = new TwitterV2({
   access_token_secret: process.env.TWITTER_TOKEN_SECRET,
 });
 
-module.exports = async ({ twitterTarget, startingPrice, title }) => {
+module.exports = async ({ twitterTarget, startingPrice, title, auctionId }) => {
   try {
     //* 1 Get UserId of twitter target
     const res = await client2.get(`users/by/username/${twitterTarget}`, {
@@ -45,7 +46,7 @@ module.exports = async ({ twitterTarget, startingPrice, title }) => {
     client1.post(
       'statuses/update',
       {
-        status: `hello @${twitterTarget} ! an auction has been created ${title} in which you are tagged. Starting bid is ${startingPrice}`,
+        status: `hello @${twitterTarget} ! An auction has been created "${title}" in which you are tagged. Starting bid is $${startingPrice}. You can view the auction here : ${clientDomain}/auctions/${auctionId} .`,
       },
       function (error, tweet, res) {
         if (error) {

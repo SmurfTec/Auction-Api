@@ -58,6 +58,7 @@ exports.createAuction = catchAsync(async (req, res, next) => {
       twitterTarget: auction.twitterTarget,
       title: auction.title,
       startingPrice: auction.startingPrice,
+      auctionId: auction._id,
     });
   }
 });
