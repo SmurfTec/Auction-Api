@@ -32,11 +32,12 @@ exports.signup = catchAsync(async (req, res, next) => {
   // * Create Admin - TODO Delete in future
 
   // let admin = await User.create({
-  //   fullName: req.body.fullName,
+  //   firstName: req.body.firstName,
   //   email: req.body.email,
   //   password: req.body.password,
   //   passwordConfirm: req.body.passwordConfirm,
   //   role: 'admin',
+  //   activated: 'true',
   // });
 
   // return res.status(200).json({

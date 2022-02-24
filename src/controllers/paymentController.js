@@ -200,6 +200,8 @@ exports.handleConnectWebhook = async (req, res) => {
         }
       );
 
+      if (!user) return;
+
       // * Pay all his pending transactions
       const userTransfers = user.pendingTransactions
         .filter((el) => el.status === 'pending')
