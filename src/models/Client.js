@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const User = require('./User');
+const crypto = require('crypto');
 
 const clientSchema = new mongoose.Schema({
   photo: String,
@@ -99,6 +100,17 @@ const clientSchema = new mongoose.Schema({
     default: false, //^ make it false in production
   },
 });
+
+clientSchema.methods.createAccountActivationLink = function () {
+  const activationToken = crypto.randomBytes(32).toString('hex');
+  // console.log(activationToken);
+  this.activationLink = crypto
+    .createHash('sha256')
+    .update(activationToken)
+    .digest('hex');
+  // console.log({ activationToken }, this.activationLink);
+  return activationToken;
+};
 
 const clientModel = User.discriminator('Client', clientSchema);
 module.exports = clientModel;

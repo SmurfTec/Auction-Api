@@ -126,7 +126,7 @@ exports.login = catchAsync(async (req, res, next) => {
   createsendToken(user, 200, res);
 });
 
-exports.confirmMail = catchAsync(async (req, res) => {
+exports.confirmMail = catchAsync(async (req, res, next) => {
   // 1 Hash The Avtivation Link
   // console.log(req.params.activationLink);
 
