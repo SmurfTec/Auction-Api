@@ -28,6 +28,9 @@ const server = require('https').Server(
   },
   app
 );
+server.listen(port, () => {
+  console.log(`App is running on port ${port}`.yellow.bold);
+});
 // const server = app.listen(port, () => {
 //   console.log(`App is running on port ${port}`.yellow.bold);
 // });
