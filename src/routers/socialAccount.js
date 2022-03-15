@@ -4,23 +4,20 @@ const protect = require('../middlewares/protect');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
-
+const { clientDomain } = require('../utils/constants');
 const router = express.Router();
-
-const clientDomain = `http://localhost:3000/account`;
-// const clientDomain = `https://auction-frontend-brown.vercel.app/`;
 
 router.get(
   '/twitter',
   async (req, res, next) => {
     const { token } = req.query;
-    if (!token) res.redirect(`${clientDomain}?error=notoken`);
+    if (!token) res.redirect(`${clientDomain}/account?error=notoken`);
 
     const decode = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
     // 3- check user exits
     const currentUser = await User.findById(decode.id);
     if (!currentUser) {
-      res.redirect(`${clientDomain}?error=noUserWithToken`);
+      res.redirect(`${clientDomain}/account?error=noUserWithToken`);
     }
 
     req.session.user = currentUser._id;
@@ -32,8 +29,8 @@ router.get(
 router.get(
   '/twitter/callback',
   passport.authenticate('twitter', {
-    successRedirect: clientDomain,
-    failureRedirect: clientDomain,
+    successRedirect: `${clientDomain}/account`,
+    failureRedirect: `${clientDomain}/account`,
     passReqToCallback: true,
   })
 );
@@ -51,8 +48,8 @@ router.get(
     next();
   },
   passport.authenticate('instagram', {
-    successRedirect: clientDomain,
-    failureRedirect: clientDomain,
+    successRedirect: `${clientDomain}/account`,
+    failureRedirect: `${clientDomain}/account`,
     failWithError: true,
   })
 );

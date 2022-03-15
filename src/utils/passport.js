@@ -3,6 +3,7 @@ const InstagramStrategy = require('passport-instagram').Strategy;
 
 const passport = require('passport');
 const Client = require('../models/Client');
+const { serverUrl } = require('../utils/constants');
 
 TWITTER_CONSUMER_KEY = process.env.TWITTER_CONSUMER_KEY;
 TWITTER_CONSUMER_SECRET = process.env.TWITTER_CONSUMER_SECRET;
@@ -15,7 +16,7 @@ passport.use(
       consumerKey: TWITTER_CONSUMER_KEY,
       consumerSecret: TWITTER_CONSUMER_SECRET,
       passReqToCallback: true,
-      callbackURL: 'http://localhost:5000/api/social/twitter/callback',
+      callbackURL: `${serverUrl}/api/social/twitter/callback`,
       // 'https://auction-api1.herokuapp.com/api/social/twitter/callback',
       includeEmail: true,
     },
