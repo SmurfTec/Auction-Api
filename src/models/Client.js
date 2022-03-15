@@ -4,7 +4,6 @@ const User = require('./User');
 const crypto = require('crypto');
 
 const clientSchema = new mongoose.Schema({
-  photo: String,
   about: {
     type: String,
     trim: true,

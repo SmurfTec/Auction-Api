@@ -22,6 +22,7 @@ const userSchema = new mongoose.Schema(
       maxlength: [20, 'lastname must be less than or equal to 20'],
       minlength: [3, 'lastname must be greater than 3'],
     },
+    photo: String,
     email: {
       type: String,
       required: [true, 'Please provide your email'],
