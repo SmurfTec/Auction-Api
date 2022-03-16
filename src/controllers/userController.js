@@ -61,7 +61,7 @@ exports.getUser = catchAsync(async (req, res, next) => {
 exports.updateMe = catchAsync(async (req, res, next) => {
   // * Client.Find... returns null, find the reason
   console.log('req.body', req.body);
-  const updatedUser = await User.findByIdAndUpdate(
+  const updatedUser = await Client.findByIdAndUpdate(
     req.user._id,
     { ...req.body },
     {
