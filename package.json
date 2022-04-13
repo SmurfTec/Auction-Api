@@ -57,5 +57,8 @@
   "bugs": {
     "url": "https://github.com/SmurfTec/Auction-Api/issues"
   },
+  "engines": {
+    "node": "14.18.1"
+  },
   "homepage": "https://github.com/SmurfTec/Auction-Api#readme"
 }
