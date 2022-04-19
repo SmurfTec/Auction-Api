@@ -3,7 +3,9 @@ const dotenv = require('dotenv').config({ path: './config.env' });
 const colors = require('colors');
 const socketIo = require('socket.io');
 const DBConnect = require('./src/utils/dbConnect');
-const { handleNewMessage } = require('./src/controllers/socketController');
+const {
+  handleNewMessage,
+} = require('./src/controllers/socketController');
 
 const { keyssl, certssl } = require('./src/ssl/config');
 
@@ -21,14 +23,17 @@ DBConnect();
 
 // server
 const port = process.env.PORT || 7000;
-const server = require('https').Server(
-  {
-    key: keyssl,
-    cert: certssl,
-  },
-  app
-);
-server.listen(port, () => {
+// const server = require('http');
+
+// const server = require('https').Server(
+//   {
+//     key: keyssl,
+//     cert: certssl,
+//   },
+//   app
+// );
+
+const server = app.listen(port, () => {
   console.log(`App is running on port ${port}`.yellow.bold);
 });
 // const server = app.listen(port, () => {
