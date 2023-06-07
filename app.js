@@ -1,4 +1,4 @@
-require('./src/utils/passport');
+// require('./src/utils/passport');
 // const passport = require('passport');
 const express = require('express');
 const app = express();
