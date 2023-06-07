@@ -1,5 +1,5 @@
 require('./src/utils/passport');
-const passport = require('passport');
+// const passport = require('passport');
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -32,7 +32,7 @@ const Contact = require('./src/models/Contact');
 const Auction = require('./src/models/Auction');
 const {
   handleDirectWebhook,
-  handleConnectWebhook,
+  handleConnectWebhook
 } = require('./src/controllers/paymentController');
 
 // view engine setup
@@ -43,12 +43,12 @@ app.use(
   cookieSession({
     name: 'session',
     keys: ['lama'],
-    maxAge: 24 * 60 * 60 * 100,
+    maxAge: 24 * 60 * 60 * 100
   }) // maxAge is 1day
 );
 
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 // TODO - UnComment in production
 // var whitelist = ['http://example1.com', 'http://example2.com']
@@ -95,7 +95,7 @@ app.use(cors());
 const limiter = rateLimit({
   max: 100, //   max number of limits
   windowMs: 60 * 60 * 1000, // hour
-  message: ' Too many req from this IP , please Try  again in an Hour ! ',
+  message: ' Too many req from this IP , please Try  again in an Hour ! '
 });
 
 // app.use('/api', limiter);
@@ -110,7 +110,7 @@ app.use(xss()); //    protect from molision code coming from html
 
 //* Cron-Job
 
-const manageAuctions = async (auction) => {
+const manageAuctions = async auction => {
   const currentDate = new Date();
   const timeLineDate = new Date(auction.timeLine);
   if (timeLineDate < currentDate) {
@@ -140,12 +140,12 @@ const manageAuctions = async (auction) => {
 // cron.schedule('*/20 * * * * *', async () => {
 cron.schedule('0 0 0 * * *', async () => {
   const auctions = await Auction.find({
-    $or: [{ status: 'published' }, { status: 'archived' }],
+    $or: [{ status: 'published' }, { status: 'archived' }]
   }).populate({
     path: 'bids',
-    select: 'biddingPrice',
+    select: 'biddingPrice'
   });
-  auctions.forEach((auction) => {
+  auctions.forEach(auction => {
     manageAuctions(auction);
   });
 });
@@ -170,7 +170,7 @@ app.get(
 
     res.json({
       status: 'success',
-      contacts,
+      contacts
     });
   })
 );
